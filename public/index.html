@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pou Online Multiplayer</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+    <div id="auth-screen" class="screen active">
+        <div class="auth-box">
+            <h1>Pou Multiplayer</h1>
+            <input type="email" id="auth-email" placeholder="E-mail">
+            <input type="password" id="auth-password" placeholder="Senha">
+            <button id="btn-login">Entrar</button>
+            <button id="btn-register" class="btn-secondary">Criar Novo Pou</button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <header id="hud">
+            <div class="stats-grid">
+                <div class="stat-bar"><span class="icon">🍖</span><div class="progress"><div id="bar-hunger" class="fill"></div></div></div>
+                <div class="stat-bar"><span class="icon">❤️</span><div class="progress"><div id="bar-health" class="fill"></div></div></div>
+                <div class="stat-bar"><span class="icon">🕹️</span><div class="progress"><div id="bar-fun" class="fill"></div></div></div>
+                <div class="stat-bar"><span class="icon">⚡</span><div class="progress"><div id="bar-energy" class="fill"></div></div></div>
+            </div>
+            <div class="user-info">
+                <span id="pou-name">Pou</span>
+                <span id="pou-level">Nível: 1</span>
+                <span id="pou-coins">🪙 0</span>
+            </div>
+        </header>
+
+        <main id="room-container">
+            <button id="nav-left" class="nav-btn">◀</button>
+            <div id="room-content" class="kitchen">
+                <div id="pou-character" class="pou-happy">
+                    <div class="eyes">
+                        <div class="eye left"><div class="pupil"></div></div>
+                        <div class="eye right"><div class="pupil"></div></div>
+                    </div>
+                    <div class="mouth"></div>
+                </div>
+            </div>
+            <button id="nav-right" class="nav-btn">▶</button>
+        </main>
+
+        <footer id="game-menu">
+            <button id="btn-open-social">🌐 Mundo Online</button>
+        </footer>
+    </div>
+
+    <div id="social-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Mundo Multiplayer</h2>
+            <div class="social-tabs">
+                <button id="tab-lobby" class="active">Jogadores Online</button>
+                <button id="tab-leaderboard">Ranking</button>
+                <button id="tab-pvp">Desafio PvP</button>
+            </div>
+            <div id="social-body">
+                </div>
+        </div>
+    </div>
+
+    <script type="module" src="../src/config/firebase.js"></script>
+    <script type="module" src="../src/core/PouState.js"></script>
+    <script type="module" src="../src/core/GameLoop.js"></script>
+    <script type="module" src="../src/multiplayer/Auth.js"></script>
+    <script type="module" src="../src/multiplayer/Social.js"></script>
+    <script type="module" src="../src/multiplayer/RealtimePvP.js"></script>
+</body>
+</html>
+        
