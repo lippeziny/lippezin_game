@@ -5,173 +5,162 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pou Online Multiplayer</title>
     <style>
-        /* DESIGN DO APP - INTERFACE VETORIAL DE JOGO CASUAL */
+        /* CONFIGURAÇÕES DE IMERSÃO E TEXTURAS */
         :root {
-            --bg-kitchen: #f39c12;
-            --bg-bedroom: #2c3e50;
-            --bg-social: #9b59b6;
             --pou-skin: #b5835a;
+            /* Cores padrão dos cômodos */
+            --color-kitchen: #f39c12;
+            --color-bedroom: #2c3e50;
+            --color-playroom: #3498db;
+            --color-bathroom: #1abc9c;
+            --color-yard: #2ecc71;
         }
         
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #1a1a1a; display: flex; align-items: center; justify-content: center; font-family: 'Arial Rounded MT Bold', sans-serif; }
 
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: #1e1e24;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Arial Rounded MT Bold', 'Comic Sans MS', sans-serif;
-        }
-
-        /* CONTEXTO DE TELA DO SMARTPHONE (Evita parecer um site de PC) */
+        /* VIEWPORT QUE SIMULA O CELULAR SÓ SE FOR NO PC */
         .game-viewport {
-            width: 100vw;
-            height: 100vh;
-            max-width: 430px;
-            max-height: 860px;
-            background: #fff;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            border-radius: 0;
+            width: 100vw; height: 100vh; max-width: 430px; max-height: 860px;
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
         }
-
         @media (min-width: 440px) and (min-height: 500px) {
-            .game-viewport {
-                border: 8px solid #333;
-                border-radius: 35px;
-                height: 92vh;
-            }
+            .game-viewport { border: 10px solid #2d3436; border-radius: 40px; height: 94vh; box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
         }
 
         .screen { display: none; width: 100%; height: 100%; position: relative; flex-direction: column; }
         .screen.active { display: flex; }
 
-        /* TELA DE BOAS-VINDAS */
-        #auth-screen { 
-            background: linear-gradient(135deg, #55efc4, #81ecec); 
-            align-items: center; 
-            justify-content: center; 
+        /* ESTILOS DE PAPEL DE PAREDE DO POU (PADRÕES DINÂMICOS COM CSS) */
+        .wallpaper { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; transition: background 0.4s; }
+        
+        /* Textura 1: Listras Clássicas do Pou */
+        .tex-stripes {
+            background-image: linear-gradient(90deg, rgba(255,255,255,0.15) 50%, transparent 50%);
+            background-size: 40px 100%;
         }
-        .auth-box {
-            background: #fff; padding: 30px 20px; border-radius: 30px;
-            border: 5px solid #333; text-align: center; width: 85%;
-            box-shadow: 0 10px 0 #333;
+        /* Textura 2: Quadriculado */
+        .tex-chess {
+            background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%),
+                              linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%);
+            background-size: 30px 30px; background-position: 0 0, 15px 15px;
         }
-        .auth-box h1 { color: #333; font-size: 36px; margin: 0 0 15px 0; font-weight: 900; text-shadow: 2px 2px 0 #fff; }
-        .auth-box input {
-            padding: 15px; width: 90%; margin: 15px 0; border: 4px solid #333;
-            border-radius: 20px; font-size: 18px; text-align: center; font-weight: bold;
-            background: #f8f9fa; color: #333;
-        }
+        /* Textura 3: Lisa/Pintura limpa */
+        .tex-smooth { background-image: none; }
 
-        /* BOTÕES ESTILO POU (GORDOS COM BORDA E SOMBRA INFERIOR) */
-        .pou-btn {
-            background: #2ecc71; color: white; padding: 15px 30px; border: 4px solid #333;
-            border-radius: 20px; font-size: 20px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 6px 0 #1e7e34; width: 90%; font-family: inherit;
-        }
+        /* TELA DE LOGIN */
+        #auth-screen { background: #55efc4; align-items: center; justify-content: center; }
+        .auth-box { background: #fff; padding: 30px 20px; border-radius: 30px; border: 5px solid #333; text-align: center; width: 85%; box-shadow: 0 10px 0 #333; }
+        .auth-box h1 { font-size: 36px; margin: 0 0 15px 0; color: #333; }
+        .auth-box input { padding: 15px; width: 90%; margin: 15px 0; border: 4px solid #333; border-radius: 20px; font-size: 18px; text-align: center; font-weight: bold; }
+        
+        .pou-btn { background: #2ecc71; color: white; padding: 15px 30px; border: 4px solid #333; border-radius: 20px; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #1e7e34; font-family: inherit; }
         .pou-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #1e7e34; }
 
-        /* HUD SUPERIOR */
-        #hud {
-            background: #f7f9fa; padding: 12px; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 5px solid #333; z-index: 10; height: 85px;
-        }
+        /* HUD TRANSPARENTE E IMERSIVO */
+        #hud { position: absolute; top: 0; left: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent); }
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 50%; }
-        .stat-bar { display: flex; align-items: center; gap: 4px; background: #e9ecef; border: 2px solid #333; padding: 2px; border-radius: 8px; font-size: 14px;}
-        .progress { width: 100%; height: 12px; background: #dee2e6; border-radius: 5px; overflow: hidden; }
-        .fill { height: 100%; width: 100%; background: #2ecc71; border-radius: 5px; transition: width 0.3s; }
-        
-        .user-info { display: flex; flex-direction: column; align-items: flex-end; font-size: 13px; color: #333; font-weight: bold; line-height: 1.3;}
-        .coin-tag { background: #ffeaa7; border: 2px solid #333; padding: 2px 8px; border-radius: 12px; margin-top: 2px; font-size: 14px;}
+        .stat-bar { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.8); border: 2.5px solid #333; padding: 2px; border-radius: 8px; font-size: 13px; font-weight: bold;}
+        .progress { width: 100%; height: 10px; background: #dfe6e9; border-radius: 5px; overflow: hidden; }
+        .fill { height: 100%; width: 100%; background: #2ecc71; transition: width 0.3s; }
+        .user-info { display: flex; flex-direction: column; align-items: flex-end; color: white; font-weight: bold; text-shadow: 2px 2px 0 #333; line-height: 1.2; font-size: 13px;}
+        .coin-tag { background: #ffeaa7; border: 2.5px solid #333; padding: 1px 8px; border-radius: 10px; margin-top: 2px; color: #333; text-shadow: none; font-size: 14px;}
+        #btn-settings-toggle { background: rgba(255,255,255,0.8); border: 2.5px solid #333; font-size: 18px; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; box-shadow: 0 3px 0 #333; margin-left: 6px;}
 
-        /* BOTÃO DE CONFIGURAÇÕES FIXO NO TOPO */
-        #btn-settings-toggle {
-            background: #dfe6e9; border: 3px solid #333; font-size: 20px;
-            width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 3px 0 #333; margin-left: 8px;
-        }
-        #btn-settings-toggle:active { transform: translateY(2px); box-shadow: 0 1px 0 #333; }
-
-        /* CÔMODOS E NAVEGAÇÃO */
-        #room-container { flex: 1; position: relative; display: flex; align-items: center; justify-content: space-between; }
-        #room-content { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transition: background 0.4s ease; }
+        /* CENÁRIO CENTRAL E FLUXO */
+        #room-container { flex: 1; position: relative; display: flex; align-items: center; justify-content: space-between; z-index: 2; height: 100%; }
+        #room-content { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         
-        .kitchen { background-color: var(--bg-kitchen); }
-        .bedroom { background-color: var(--bg-bedroom); }
-        
-        .nav-btn { 
-            background: rgba(255,255,255,0.4); border: 3px solid #333; color: #333; 
-            padding: 15px 10px; cursor: pointer; font-size: 20px; font-weight: bold;
-            border-radius: 15px; margin: 8px; z-index: 5; box-shadow: 0 4px 0 #333;
-        }
+        .nav-btn { background: rgba(255,255,255,0.6); border: 3px solid #333; color: #333; padding: 12px 10px; cursor: pointer; font-size: 20px; font-weight: bold; border-radius: 12px; z-index: 5; box-shadow: 0 4px 0 #333; }
         .nav-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #333; }
 
-        /* O POU ANATÔMICO */
+        /* DETALHES VISUAIS DOS 5 CÔMODOS */
+        .scenery-element { position: absolute; z-index: 2; pointer-events: none; }
+        
+        /* Cozinha: Prateleira/Geladeira ao fundo */
+        .kitchen-shelf { top: 120px; width: 75%; height: 20px; background: #d7ccc8; border: 3px solid #333; border-radius: 5px; box-shadow: 0 5px 0 rgba(0,0,0,0.2); }
+        /* Banheiro: Chuveiro e saboneteira */
+        .bathroom-tub { bottom: 120px; left: 20px; width: 80px; height: 45px; background: #e0f7fa; border: 3px solid #333; border-radius: 0 0 20px 20px; }
+        /* Quarto: Abajur e Gaveteiro */
+        .bedroom-lamp { top: 140px; right: 40px; font-size: 45px; filter: drop-shadow(0 4px 0 rgba(0,0,0,0.2)); }
+        /* Sala de Jogos: Skate e Console */
+        .playroom-console { bottom: 130px; right: 30px; font-size: 40px; }
+        /* Quintal: Gramado, Sol e Casa do Pou */
+        .yard-grass { bottom: 0; left: 0; width: 100%; height: 140px; background: #2ecc71; border-top: 5px solid #333; z-index: 2; position: absolute; }
+        .yard-sun { top: 100px; left: 40px; font-size: 50px; animation: floatSun 4s ease-in-out infinite alternate; }
+        .yard-house { bottom: 120px; right: 20px; font-size: 90px; filter: drop-shadow(5px 5px 0 rgba(0,0,0,0.15)); }
+        
+        @keyframes floatSun { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+
+        /* O POU */
         #pou-character {
-            width: 175px; height: 155px; background: var(--pou-skin);
+            width: 165px; height: 145px; background: var(--pou-skin);
             border-radius: 50% 50% 43% 43% / 63% 63% 37% 37%;
-            position: relative; box-shadow: inset 0 -15px 0 rgba(0,0,0,0.18), 0 15px 0px rgba(0,0,0,0.15);
+            position: relative; box-shadow: inset 0 -15px 0 rgba(0,0,0,0.15), 0 12px 0px rgba(0,0,0,0.15);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: transform 0.1s, background 0.3s;
+            z-index: 3; margin-top: 40px; transition: transform 0.1s;
         }
         .eyes { display: flex; gap: 24px; margin-top: -25px; }
-        .eye { width: 44px; height: 44px; background: white; border-radius: 50%; border: 4px solid #333; position: relative; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
-        .pupil { width: 16px; height: 16px; background: #000; border-radius: 50%; transition: all 0.1s;}
-        .mouth { width: 36px; height: 16px; border: 4px solid #333; border-top: none; border-radius: 0 0 20px 20px; margin-top: 18px; transition: all 0.1s; }
+        .eye { width: 44px; height: 44px; background: white; border-radius: 50%; border: 4px solid #333; position: relative; display: flex; align-items: center; justify-content: center; }
+        .pupil { width: 16px; height: 16px; background: #000; border-radius: 50%; }
+        .mouth { width: 36px; height: 16px; border: 4px solid #333; border-top: none; border-radius: 0 0 20px 20px; margin-top: 18px; }
         
-        /* Modificadores de Expressão */
+        /* Modificadores Visuais do Pou */
         #pou-character.eating .mouth { width: 24px; height: 24px; background: #333; border-radius: 50%; }
-        #pou-character.sleeping .eye { height: 5px; background: #333; border-radius: 0; border: none; width: 38px;}
+        #pou-character.sleeping .eye { height: 5px; background: #333; border-radius: 0; border: none; width: 36px; }
         #pou-character.sleeping .pupil { display: none; }
-        #pou-character.sleeping .mouth { width: 22px; height: 4px; border: none; background: #333; border-radius: 2px; }
+        #pou-character.sleeping .mouth { width: 20px; height: 4px; border: none; background: #333; border-radius: 2px; }
 
-        /* PRATELEIRA DE ITENS / CAIXA DE EMOJIS */
-        #room-actions { position: absolute; bottom: 25px; width: 100%; display: flex; justify-content: center; gap: 15px; }
+        /* BANDEJA DE INTERAÇÕES */
+        #room-actions { position: absolute; bottom: 25px; width: 100%; display: flex; justify-content: center; gap: 20px; z-index: 4; }
         .emoji-box { 
             background: #fff; border: 4px solid #333; border-radius: 20px; 
-            width: 75px; height: 75px; font-size: 36px; cursor: pointer; 
+            width: 75px; height: 75px; font-size: 38px; cursor: pointer; 
             box-shadow: 0 6px 0 #333; display: flex; align-items: center; justify-content: center;
-            transition: transform 0.05s;
         }
         .emoji-box:active { transform: translateY(4px); box-shadow: 0 2px 0 #333; }
-
-        /* BANNER INFERIOR SOCIAL */
-        #game-menu { background: #f7f9fa; padding: 12px; display: flex; justify-content: center; border-top: 5px solid #333; height: 75px;}
-        .social-trigger-btn { background: var(--bg-social); color: white; border: 3px solid #333; box-shadow: 0 4px 0 #333; width: 90%; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit;}
-        .social-trigger-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #333; }
-
-        /* MODAIS INTERNOS ESTILIZADOS */
-        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; }
-        .modal-content { background: white; margin: 25% auto; padding: 25px 20px; width: 85%; border-radius: 25px; border: 5px solid #333; position: relative; box-shadow: 0 15px 0 rgba(0,0,0,0.2); }
-        .close-btn { position: absolute; right: 15px; top: 10px; font-size: 32px; cursor: pointer; color: #333; font-weight: bold;}
         
-        .player-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 3px dashed #b2bec3; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-weight: bold; font-size: 16px;}
+        /* Balde de tinta interativo exclusivo do quintal */
+        #paint-bucket { font-size: 42px; cursor: pointer; background: white; border: 4px solid #333; border-radius: 50%; width: 75px; height: 75px; display: none; align-items: center; justify-content: center; box-shadow: 0 6px 0 #333;}
+        #paint-bucket:active { transform: translateY(4px); box-shadow: 0 2px 0 #333; }
+
+        /* MENU INFERIOR */
+        #game-menu { height: 75px; background: #fff; border-top: 5px solid #333; display: flex; justify-content: center; align-items: center; padding: 10px; z-index: 4; }
+        .social-trigger-btn { background: var(--bg-social); color: white; border: 3px solid #333; box-shadow: 0 4px 0 #333; width: 90%; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; height: 48px; font-family: inherit;}
+
+        /* MODAIS */
+        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; }
+        .modal-content { background: white; margin: 20% auto; padding: 25px 20px; width: 88%; border-radius: 25px; border: 5px solid #333; position: relative; box-shadow: 0 15px 0 rgba(0,0,0,0.3); }
+        .close-btn { position: absolute; right: 15px; top: 10px; font-size: 32px; cursor: pointer; font-weight: bold; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-weight: bold; }
+        
+        /* Paletas do Balde de Tinta */
+        .palette-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+        .color-dot { width: 100%; height: 45px; border-radius: 12px; border: 3px solid #333; cursor: pointer; box-shadow: 0 3px 0 #333; }
+        .color-dot:active { transform: translateY(2px); box-shadow: 0 1px 0 #333; }
+        .tex-btn { background: #eee; border: 3px solid #333; border-radius: 12px; padding: 10px; font-weight: bold; cursor: pointer; font-family: inherit; box-shadow: 0 3px 0 #333;}
+        .tex-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #333; }
     </style>
 </head>
 <body>
 
     <div class="game-viewport">
 
-        <!-- 1. TELA DE LOGIN ANÔNIMO -->
+        <!-- 1. TELA DE LOGIN -->
         <div id="auth-screen" class="screen active">
             <div class="auth-box">
-                <h1>Pou Online 🥔</h1>
-                <input type="text" id="pou-nickname-input" placeholder="Apelido do Pou" maxlength="12">
-                <button id="btn-play-guest" class="pou-btn">JOGAR AGORA</button>
+                <h1 style="margin:0; font-size:38px;">Pou Online 🥔</h1>
+                <p style="font-weight:bold; color:#7f8c8d; margin:5px 0 15px 0;">O Retorno Multiplayer</p>
+                <input type="text" id="pou-nickname-input" placeholder="Apelido do seu Pou" maxlength="12">
+                <button id="btn-play-guest" class="pou-btn">ENTRAR NO APP</button>
             </div>
         </div>
 
         <!-- 2. TELA DO JOGO PRINCIPAL -->
         <div id="game-screen" class="screen">
+            <!-- CANVAS DO WALLPAPER TEXTURIZADO ATRAZ DE TUDO -->
+            <div id="dynamic-wallpaper" class="wallpaper tex-stripes" style="background-color: var(--color-kitchen);"></div>
+
             <header id="hud">
                 <div class="stats-grid">
                     <div class="stat-bar">🍖<div class="progress"><div id="bar-hunger" class="fill"></div></div></div>
@@ -180,19 +169,21 @@
                     <div class="stat-bar">⚡<div class="progress"><div id="bar-energy" class="fill"></div></div></div>
                 </div>
                 <div class="user-info">
-                    <span id="pou-name" style="font-size: 16px;">Pou</span>
-                    <span id="pou-level" style="color: #7f8c8d;">Nível 1</span>
+                    <span id="pou-name" style="font-size: 15px;">Pou</span>
+                    <span id="pou-level" style="opacity: 0.9;">Nível 1</span>
                     <div class="coin-tag" id="pou-coins">🪙 150</div>
                 </div>
-                <!-- Botão discreto de configurações (Engrenagem) -->
                 <button id="btn-settings-toggle">⚙️</button>
             </header>
 
             <main id="room-container">
                 <button id="nav-left" class="nav-btn">◀</button>
                 
-                <div id="room-content" class="kitchen">
-                    <!-- O POU ANATÔMICO -->
+                <div id="room-content">
+                    <!-- ELEMENTOS CENOGRÁFICOS VOLATEIS (INJETADOS VIA JS) -->
+                    <div id="scenery-canvas" style="width:100%; height:100%; position:absolute; top:0; left:0; pointer-events:none;"></div>
+
+                    <!-- O POU REALISTA -->
                     <div id="pou-character">
                         <div class="eyes">
                             <div class="eye"><div class="pupil"></div></div>
@@ -201,9 +192,10 @@
                         <div class="mouth"></div>
                     </div>
 
-                    <!-- CAIXAS DE EMOJIS INTERATIVAS -->
+                    <!-- BOTÕES DE CENÁRIO -->
                     <div id="room-actions">
                         <button id="action-trigger" class="emoji-box">🍔</button>
+                        <button id="paint-bucket">🎨</button>
                     </div>
                 </div>
 
@@ -211,46 +203,63 @@
             </main>
 
             <footer id="game-menu">
-                <button id="btn-open-social" class="social-trigger-btn">🌐 POU MUNDO ONLINE</button>
+                <button id="btn-open-social" class="social-trigger-btn">🌐 VISITAR OUTROS POUS</button>
             </footer>
         </div>
 
-        <!-- 3. MODAL DE CONFIGURAÇÕES (Sons, Música e Backup Google) -->
+        <!-- 3. MODAL DE CONFIGURAÇÕES -->
         <div id="settings-modal" class="modal">
             <div class="modal-content">
                 <span class="close-btn" id="close-settings">&times;</span>
-                <h2 style="margin-top: 0; text-align: center; border-bottom: 4px solid #333; padding-bottom: 5px;">Configurações ⚙️</h2>
-                
-                <div class="setting-row">
-                    <span>Efeitos Sonoros</span>
-                    <button id="btn-toggle-sfx" class="pou-btn" style="width: auto; padding: 5px 15px; font-size: 14px; box-shadow: 0 3px 0 #1e7e34;">LIGADO</button>
-                </div>
-                <div class="setting-row">
-                    <span>Música de Fundo</span>
-                    <button id="btn-toggle-music" class="pou-btn" style="width: auto; padding: 5px 15px; font-size: 14px; box-shadow: 0 3px 0 #1e7e34;">LIGADO</button>
-                </div>
-                
-                <div style="margin-top: 25px; text-align: center;">
-                    <button id="btn-save-account" class="pou-btn" style="background: #3498db; box-shadow: 0 5px 0 #217dbb; font-size: 16px; width: 100%;">💾 Sincronizar com Google</button>
-                    <p id="txt-account-status" style="font-size: 11px; color: #7f8c8d; margin-top: 5px; font-weight: bold;">Seu progresso está salvo localmente como Visitante.</p>
+                <h2 style="margin-top:0; text-align:center; border-bottom:4px solid #333; padding-bottom:5px;">Ajustes ⚙️</h2>
+                <div class="setting-row"><span>Efeitos Sonoros</span><button id="btn-toggle-sfx" class="pou-btn" style="width:auto; padding:5px 15px; font-size:14px; box-shadow:0 3px 0 #1e7e34;">LIGADO</button></div>
+                <div class="setting-row"><span>Música de Fundo</span><button id="btn-toggle-music" class="pou-btn" style="width:auto; padding:5px 15px; font-size:14px; box-shadow:0 3px 0 #1e7e34;">LIGADO</button></div>
+                <div style="margin-top:20px; text-align:center;">
+                    <button id="btn-save-account" class="pou-btn" style="background:#3498db; box-shadow:0 5px 0 #217dbb; font-size:15px; width:100%;">💾 Vincular Conta ao Google</button>
                 </div>
             </div>
         </div>
 
-        <!-- 4. MODAL SOCIAL MULTIPLAYER -->
+        <!-- 4. MODAL DO BALDE DE TINTA (CUSTOMIZAÇÃO DE CENÁRIO) -->
+        <div id="paint-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" id="close-paint">&times;</span>
+                <h2 style="margin-top:0; text-align:center; border-bottom:4px solid #333; padding-bottom:5px;">Loja de Tintas 🎨</h2>
+                
+                <p style="font-weight:bold; margin-bottom:5px;">1. Escolha a Cor:</p>
+                <div class="palette-grid">
+                    <div class="color-dot" data-color="#f39c12" style="background:#f39c12;"></div>
+                    <div class="color-dot" data-color="#2c3e50" style="background:#2c3e50;"></div>
+                    <div class="color-dot" data-color="#3498db" style="background:#3498db;"></div>
+                    <div class="color-dot" data-color="#1abc9c" style="background:#1abc9c;"></div>
+                    <div class="color-dot" data-color="#e74c3c" style="background:#e74c3c;"></div>
+                    <div class="color-dot" data-color="#9b59b6" style="background:#9b59b6;"></div>
+                    <div class="color-dot" data-color="#34495e" style="background:#34495e;"></div>
+                    <div class="color-dot" data-color="#ff7675" style="background:#ff7675;"></div>
+                </div>
+
+                <p style="font-weight:bold; margin:15px 0 5px 0;">2. Escolha a Estampa:</p>
+                <div style="display:flex; gap:10px;">
+                    <button class="tex-btn" data-tex="tex-stripes" style="flex:1;">Listras Pou</button>
+                    <button class="tex-btn" data-tex="tex-chess" style="flex:1;">Xadrez</button>
+                    <button class="tex-btn" data-tex="tex-smooth" style="flex:1;">Lisa</button>
+                </div>
+                <p style="font-size:12px; color:#7f8c8d; text-align:center; margin-top:15px; font-weight:bold;">Customização grátis aplicada ao cômodo atual!</p>
+            </div>
+        </div>
+
+        <!-- 5. MODAL SOCIAL MULTIPLAYER -->
         <div id="social-modal" class="modal">
             <div class="modal-content">
                 <span class="close-btn" id="close-social">&times;</span>
-                <h2 style="margin-top: 0; text-align: center; border-bottom: 4px solid #333; padding-bottom: 5px;">Pous no Mundo 🌍</h2>
-                <div id="social-body" style="max-height: 280px; overflow-y: auto; margin-top: 10px;">
-                    <!-- Sincronizado via Firestore -->
-                </div>
+                <h2 style="margin-top:0; text-align:center; border-bottom:4px solid #333; padding-bottom:5px;">Vizinhos Globais 🌍</h2>
+                <div id="social-body" style="max-height:280px; overflow-y:auto;"></div>
             </div>
         </div>
 
     </div>
 
-    <!-- INTEGRAÇÃO COMPLETA FIREBASE E CONTROLADORES DE ÁUDIO -->
+    <!-- CODE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInAnonymously, GoogleAuthProvider, linkWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -262,8 +271,7 @@
             projectId: "lippezingame",
             storageBucket: "lippezingame.firebasestorage.app",
             messagingSenderId: "690275116956",
-            appId: "1:690275116956:web:c26a22dac3c07f56130a59",
-            measurementId: "G-FMT175RLFZ"
+            appId: "1:690275116956:web:c26a22dac3c07f56130a59"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -272,90 +280,41 @@
 
         let pou = null;
         let userDocRef = null;
-        let currentRoom = "kitchen";
-        const rooms = ["kitchen", "bedroom"];
+        
+        // OS 5 CÔMODOS DO JOGO COMPLETO
+        const rooms = ["kitchen", "bathroom", "playroom", "bedroom", "yard"];
+        let roomIdx = 0;
 
-        // ESTADO DE CONFIGURAÇÕES DE ÁUDIO (SINTETIZADOS PARA NÃO DEPENDER DE ARQUIVOS EXTERNOS .MP3)
-        let sfxEnabled = true;
-        let musicEnabled = true;
-        let audioCtx = null;
-        let musicInterval = null;
+        // Configuração padrão de wallpapers por cômodo (Salva no Firebase)
+        let roomStyles = {
+            kitchen: { color: "#f39c12", texture: "tex-stripes" },
+            bathroom: { color: "#1abc9c", texture: "tex-stripes" },
+            playroom: { color: "#3498db", texture: "tex-stripes" },
+            bedroom: { color: "#2c3e50", texture: "tex-stripes" },
+            yard: { color: "#74b9ff", texture: "tex-smooth" } // céu do quintal
+        };
 
-        // INICIALIZA ÁUDIO WEB
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
-
-        // EMULADOR DE EFEITO SONORO (BEEP DO POU)
+        // AUDIO ENGINE SYNTH
+        let sfxEnabled = true; let musicEnabled = true; let audioCtx = null; let musicInterval = null;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function playTone(freq, type, duration) {
             if (!sfxEnabled || !audioCtx) return;
-            try {
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch(e){}
+            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.value = freq; gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
-
-        // MOTOR DE MÚSICA EM LOOP EMULADA (Estilo retrô/casual 8-bit Pou)
-        function startMusicLoop() {
+        function startMusic() {
             if (musicInterval) clearInterval(musicInterval);
-            let notes = [261.63, 293.66, 329.63, 349.23, 392.00, 349.23, 329.63, 293.66]; // Melodia boba cíclica
-            let currentNote = 0;
-            musicInterval = setInterval(() => {
-                if (musicEnabled && audioCtx) {
-                    playTone(notes[currentNote], 'triangle', 0.15);
-                    currentNote = (currentNote + 1) % notes.length;
-                }
-            }, 400);
+            let notes = [261, 329, 392, 329, 293, 349, 440, 349]; let n = 0;
+            musicInterval = setInterval(() => { if (musicEnabled && audioCtx) { playTone(notes[n], 'triangle', 0.12); n = (n + 1) % notes.length; } }, 450);
         }
 
-        // CONTROLES DE UI DO MODAL DE CONFIGURAÇÕES
-        document.getElementById('btn-settings-toggle').addEventListener('click', () => {
-            initAudio();
-            document.getElementById('settings-modal').style.display = 'block';
-        });
-        document.getElementById('close-settings').addEventListener('click', () => document.getElementById('settings-modal').style.display = 'none');
-
-        document.getElementById('btn-toggle-sfx').addEventListener('click', (e) => {
-            sfxEnabled = !sfxEnabled;
-            e.target.innerText = sfxEnabled ? "LIGADO" : "DESLIGADO";
-            e.target.style.background = sfxEnabled ? "#2ecc71" : "#95a5a6";
-            playTone(300, 'sine', 0.1);
-        });
-
-        document.getElementById('btn-toggle-music').addEventListener('click', (e) => {
-            musicEnabled = !musicEnabled;
-            e.target.innerText = musicEnabled ? "LIGADO" : "DESLIGADO";
-            e.target.style.background = musicEnabled ? "#2ecc71" : "#95a5a6";
-            if(musicEnabled) startMusicLoop();
-        });
-
-        // AUTENTICAÇÃO ANÔNIMA
+        // CONEXÃO AUTH E BANCO
         document.getElementById('btn-play-guest').addEventListener('click', async () => {
-            initAudio();
-            if(musicEnabled) startMusicLoop();
-            const nameInput = document.getElementById('pou-nickname-input').value.trim();
-            sessionStorage.setItem('pou_name', nameInput || "Pou");
+            initAudio(); if(musicEnabled) startMusic();
+            sessionStorage.setItem('pou_name', document.getElementById('pou-nickname-input').value.trim() || "Pou");
             await signInAnonymously(auth);
-        });
-
-        document.getElementById('btn-save-account').addEventListener('click', async () => {
-            const provider = new GoogleAuthProvider();
-            try {
-                await linkWithPopup(auth.currentUser, provider);
-                alert("Progresso salvo com sucesso na sua conta Google!");
-                document.getElementById('btn-save-account').style.display = 'none';
-                document.getElementById('txt-account-status').innerText = "Seu Pou está permanentemente salvo no Google! ☁️";
-            } catch (e) { alert("Erro ao salvar conta: " + e.message); }
         });
 
         onAuthStateChanged(auth, async (user) => {
@@ -363,47 +322,32 @@
                 document.getElementById('auth-screen').classList.remove('active');
                 document.getElementById('game-screen').classList.add('active');
                 
-                if(!user.isAnonymous) {
-                    document.getElementById('btn-save-account').style.display = 'none';
-                    document.getElementById('txt-account-status').innerText = "Seu Pou está permanentemente salvo no Google! ☁️";
-                }
-
                 userDocRef = doc(db, "pous", user.uid);
                 const docSnap = await getDoc(userDocRef);
 
                 if (docSnap.exists()) {
-                    pou = docSnap.data();
+                    const data = docSnap.data();
+                    pou = data.pouState;
+                    if(data.roomStyles) roomStyles = data.roomStyles;
                 } else {
-                    pou = {
-                        name: sessionStorage.getItem('pou_name') || "Pou",
-                        level: 1, xp: 0, coins: 150,
-                        hunger: 100, health: 100, fun: 100, energy: 100,
-                        isSleeping: false
-                    };
-                    await setDoc(userDocRef, pou);
+                    pou = { name: sessionStorage.getItem('pou_name'), level: 1, xp: 0, coins: 200, hunger: 100, health: 100, fun: 100, energy: 100, isSleeping: false };
+                    await setDoc(userDocRef, { pouState: pou, roomStyles: roomStyles });
                 }
-                updateUI();
-                setInterval(runGameLoop, 8000);
+                renderRoom();
+                setInterval(runGameLoop, 10000);
             }
         });
 
-        // CICLO DE DECAIMENTO INTERNO
         function runGameLoop() {
             if (!pou) return;
-            if (pou.isSleeping) {
-                pou.energy = Math.min(100, pou.energy + 6);
-            } else {
-                pou.hunger = Math.max(0, pou.hunger - 1);
-                pou.energy = Math.max(0, pou.energy - 0.6);
-                pou.fun = Math.max(0, pou.fun - 1);
-            }
+            if (pou.isSleeping) { pou.energy = Math.min(100, pou.energy + 8); } 
+            else { pou.hunger = Math.max(0, pou.hunger - 1); pou.energy = Math.max(0, pou.energy - 0.5); pou.fun = Math.max(0, pou.fun - 1); }
             if (pou.hunger < 20) pou.health = Math.max(0, pou.health - 2);
-            updateUI();
-            updateDoc(userDocRef, pou);
+            updateHUD();
+            updateDoc(userDocRef, { pouState: pou });
         }
 
-        function updateUI() {
-            if (!pou) return;
+        function updateHUD() {
             document.getElementById('bar-hunger').style.width = `${pou.hunger}%`;
             document.getElementById('bar-health').style.width = `${pou.health}%`;
             document.getElementById('bar-fun').style.width = `${pou.fun}%`;
@@ -411,98 +355,166 @@
             document.getElementById('pou-name').innerText = pou.name;
             document.getElementById('pou-level').innerText = `Nível ${pou.level}`;
             document.getElementById('pou-coins').innerText = `🪙 ${pou.coins}`;
-
-            const pouChar = document.getElementById('pou-character');
-            pouChar.className = "";
-            if (pou.isSleeping) pouChar.classList.add('sleeping');
         }
 
-        // MOVIMENTAÇÃO DE CÔMODOS
-        document.getElementById('nav-right').addEventListener('click', () => switchRoom(1));
-        document.getElementById('nav-left').addEventListener('click', () => switchRoom(-1));
+        // MOTOR DE RENDERIZAÇÃO DE COMODOS IMERSIVOS
+        function renderRoom() {
+            if(!pou) return;
+            updateHUD();
+            const currentRoom = rooms[roomIdx];
+            const wallpaper = document.getElementById('dynamic-wallpaper');
+            const canvas = document.getElementById('scenery-canvas');
+            const actionBtn = document.getElementById('action-trigger');
+            const paintBucket = document.getElementById('paint-bucket');
+            const pouChar = document.getElementById('pou-character');
 
-        function switchRoom(dir) {
-            playTone(450, 'sine', 0.05);
-            let idx = rooms.indexOf(currentRoom) + dir;
-            if (idx < 0) idx = rooms.length - 1;
-            if (idx >= rooms.length) idx = 0;
-            currentRoom = rooms[idx];
+            // Aplica Cor e Textura salvas do cômodo atual
+            wallpaper.style.backgroundColor = roomStyles[currentRoom].color;
+            wallpaper.className = `wallpaper ${roomStyles[currentRoom].texture}`;
+
+            // Limpa decorações anteriores
+            canvas.innerHTML = "";
+            paintBucket.style.display = "none";
+            actionBtn.style.display = "flex";
             
-            document.getElementById('room-content').className = currentRoom;
-            const actionTrigger = document.getElementById('action-trigger');
+            // Reposiciona Pou se estiver no quintal (para pisar na grama)
+            pouChar.style.transform = (currentRoom === "yard") ? "translateY(55px)" : "translateY(0px)";
 
+            // GERAÇÃO DOS DETALHES VISUAIS IMERSIVOS POR CÔMODO
             if (currentRoom === "kitchen") {
-                actionTrigger.innerText = "🍔";
-            } else if (currentRoom === "bedroom") {
-                actionTrigger.innerText = pou.isSleeping ? "💡" : "🌙";
+                actionBtn.innerText = "🍔";
+                canvas.innerHTML = `<div class="scenery-element kitchen-shelf"></div>
+                                    <div style="position:absolute; top:85px; font-size:30px;">🏺</div>`;
+            } 
+            else if (currentRoom === "bathroom") {
+                actionBtn.innerText = "🧼";
+                canvas.innerHTML = `<div class="scenery-element bathroom-tub"></div>
+                                    <div style="position:absolute; bottom:165px; left:45px; font-size:25px;">🚰</div>`;
+            } 
+            else if (currentRoom === "playroom") {
+                actionBtn.innerText = "⚽";
+                canvas.innerHTML = `<div class="scenery-element playroom-console">🎮</div>
+                                    <div style="position:absolute; bottom:130px; left:40px; font-size:35px;">🛹</div>`;
+            } 
+            else if (currentRoom === "bedroom") {
+                actionBtn.innerText = pou.isSleeping ? "💡" : "🌙";
+                canvas.innerHTML = `<div class="scenery-element bedroom-lamp">🛋️</div>`;
+                if(pou.isSleeping) wallpaper.style.backgroundColor = "#111c24";
+            } 
+            else if (currentRoom === "yard") {
+                // No quintal exibe o Balde de Tinta e esconde o botão de ação normal
+                actionBtn.style.display = "none";
+                paintBucket.style.display = "flex";
+                
+                canvas.innerHTML = `
+                    <div class="yard-sun">☀️</div>
+                    <div class="yard-house">🏡</div>
+                    <div class="yard-grass"></div>
+                `;
             }
+
+            pouChar.className = "";
+            if (pou.isSleeping && currentRoom === "bedroom") pouChar.classList.add('sleeping');
         }
 
-        // CAIXA DE AÇÕES INTERATIVAS (Dar comida / Apagar luz)
-        document.getElementById('action-trigger').addEventListener('click', () => {
-            const pouChar = document.getElementById('pou-character');
-            if (currentRoom === "kitchen") {
-                if (pou.coins >= 5) {
-                    pou.hunger = Math.min(100, pou.hunger + 15);
-                    pou.coins -= 5;
-                    pou.xp += 15;
-                    if(pou.xp >= pou.level * 60) { pou.level++; pou.xp = 0; }
-                    
-                    // Som clássico de mastigação ("crunch") emulada
-                    playTone(150, 'square', 0.1);
-                    setTimeout(() => playTone(120, 'square', 0.1), 120);
+        // NAVEGAÇÃO ENTRE CÔMODOS
+        document.getElementById('nav-right').addEventListener('click', () => { roomIdx = (roomIdx + 1) % rooms.length; playTone(400, 'sine', 0.05); renderRoom(); });
+        document.getElementById('nav-left').addEventListener('click', () => { roomIdx = (roomIdx - 1 + rooms.length) % rooms.length; playTone(400, 'sine', 0.05); renderRoom(); });
 
-                    pouChar.classList.add('eating');
-                    setTimeout(() => pouChar.classList.remove('eating'), 400);
-                } else { alert("Você não tem moedas suficientes!"); }
+        // SISTEMA DE INTERAÇÕES POR CÔMODO
+        document.getElementById('action-trigger').addEventListener('click', () => {
+            const currentRoom = rooms[roomIdx];
+            const pouChar = document.getElementById('pou-character');
+
+            if (currentRoom === "kitchen") {
+                if(pou.coins >= 5) {
+                    pou.hunger = Math.min(100, pou.hunger + 20); pou.coins -= 5; pou.xp += 10;
+                    playTone(140, 'square', 0.08); setTimeout(() => playTone(110, 'square', 0.08), 100);
+                    pouChar.classList.add('eating'); setTimeout(() => pouChar.classList.remove('eating'), 400);
+                } else { alert("Sem moedas!"); }
+            } 
+            else if (currentRoom === "bathroom") {
+                pou.health = Math.min(100, pou.health + 15);
+                playTone(300, 'sine', 0.1); // Som de bolhas
+                pouChar.style.transform = "scale(1.08)"; setTimeout(() => pouChar.style.transform = "scale(1)", 200);
+            } 
+            else if (currentRoom === "playroom") {
+                pou.fun = Math.min(100, pou.fun + 25); pou.coins += 2; pou.xp += 12;
+                playTone(523, 'sine', 0.05); setTimeout(() => playTone(659, 'sine', 0.05), 60);
+                pouChar.style.transform = "translateY(-30px)"; setTimeout(() => pouChar.style.transform = "translateY(0)", 200);
             } 
             else if (currentRoom === "bedroom") {
                 pou.isSleeping = !pou.isSleeping;
-                document.getElementById('action-trigger').innerText = pou.isSleeping ? "💡" : "🌙";
-                document.getElementById('room-content').style.backgroundColor = pou.isSleeping ? "#111c24" : "var(--bg-bedroom)";
-                playTone(pou.isSleeping ? 200 : 600, 'sine', 0.1);
+                playTone(pou.isSleeping ? 180 : 550, 'sine', 0.1);
+                renderRoom();
             }
-            updateUI();
-            updateDoc(userDocRef, pou);
+
+            if(pou.xp >= pou.level * 60) { pou.level++; pou.xp = 0; playTone(880, 'sine', 0.3); }
+            updateHUD();
+            updateDoc(userDocRef, { pouState: pou });
         });
 
-        // MUNDO ONLINE MULTIPLAYER (FIRESTORE REALTIME SYNC)
-        document.getElementById('btn-open-social').addEventListener('click', () => {
-            playTone(500, 'sine', 0.05);
-            document.getElementById('social-modal').style.display = 'block';
-            
-            onSnapshot(collection(db, "pous"), (snapshot) => {
-                const socialBody = document.getElementById('social-body');
-                socialBody.innerHTML = "";
+        // MECÂNICA EXCLUSIVA DO BALDE DE TINTA (QUINTAL)
+        const paintModal = document.getElementById('paint-modal');
+        document.getElementById('paint-bucket').addEventListener('click', () => { playTone(400, 'sine', 0.05); paintModal.style.display = 'block'; });
+        document.getElementById('close-paint').addEventListener('click', () => paintModal.style.display = 'none');
 
-                snapshot.forEach((otherDoc) => {
-                    const data = otherDoc.data();
-                    if (otherDoc.id === auth.currentUser.uid) return;
-
-                    const row = document.createElement('div');
-                    row.className = 'player-row';
-                    row.innerHTML = `
-                        <div>
-                            <span style="font-size:16px; font-weight:bold; color:#333;">${data.name}</span> 
-                            <span style="font-size:12px; color:#7f8c8d;">(Nív. ${data.level})</span>
-                            <br><span style="font-size:13px; color:#e74c3c;">❤️ ${data.likes || 0} curtidas</span>
-                        </div>
-                        <button class="like-btn" data-id="${otherDoc.id}" style="background:#e74c3c; color:white; border:3px solid #333; padding:6px 12px; border-radius:12px; font-weight:bold; cursor:pointer; box-shadow:0 3px 0 #333;">❤️ Like</button>
-                    `;
-                    socialBody.appendChild(row);
-                });
-
-                document.querySelectorAll('.like-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const targetId = e.target.dataset.id;
-                        playTone(650, 'sine', 0.08);
-                        await updateDoc(doc(db, "pous", targetId), { likes: increment(1) });
-                    });
-                });
+        // Mudar cor do cômodo atual
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                const currentRoom = rooms[roomIdx];
+                const selectedColor = e.target.dataset.color;
+                
+                roomStyles[currentRoom].color = selectedColor;
+                playTone(450, 'sine', 0.08);
+                renderRoom();
+                updateDoc(userDocRef, { roomStyles: roomStyles });
             });
         });
 
-        document.getElementById('close-social').addEventListener('click', () => document.getElementById('social-modal').style.display = 'none');
+        // Mudar estampa do cômodo atual
+        document.querySelectorAll('.tex-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const currentRoom = rooms[roomIdx];
+                const selectedTex = e.target.dataset.tex;
+                
+                roomStyles[currentRoom].texture = selectedTex;
+                playTone(480, 'sine', 0.08);
+                renderRoom();
+                updateDoc(userDocRef, { roomStyles: roomStyles });
+            });
+        });
+
+        // CONTROLES DE AJUSTE ADICIONAIS
+        const setModal = document.getElementById('settings-modal');
+        document.getElementById('btn-settings-toggle').addEventListener('click', () => { initAudio(); setModal.style.display = 'block'; });
+        document.getElementById('close-settings').addEventListener('click', () => setModal.style.display = 'none');
+        
+        document.getElementById('btn-toggle-sfx').addEventListener('click', (e) => { sfxEnabled = !sfxEnabled; e.target.innerText = sfxEnabled ? "LIGADO" : "DESLIGADO"; e.target.style.background = sfxEnabled ? "#2ecc71" : "#95a5a6"; });
+        document.getElementById('btn-toggle-music').addEventListener('click', (e) => { musicEnabled = !musicEnabled; e.target.innerText = musicEnabled ? "LIGADO" : "DESLIGADO"; e.target.style.background = musicEnabled ? "#2ecc71" : "#95a5a6"; if(musicEnabled) startMusic(); });
+
+        document.getElementById('btn-save-account').addEventListener('click', async () => {
+            try { await linkWithPopup(auth.currentUser, new GoogleAuthProvider()); alert("Sincronizado permanentemente com o Google!"); } catch(e){ alert(e.message); }
+        });
+
+        // VISITAR AMIGOS
+        const socModal = document.getElementById('social-modal');
+        document.getElementById('btn-open-social').addEventListener('click', () => {
+            socModal.style.display = 'block';
+            onSnapshot(collection(db, "pous"), (snap) => {
+                const body = document.getElementById('social-body'); body.innerHTML = "";
+                snap.forEach(doc => {
+                    if(doc.id === auth.currentUser.uid) return;
+                    const data = doc.data().pouState;
+                    const row = document.createElement('div'); row.className = 'player-row';
+                    row.innerHTML = `<div><strong>${data.name}</strong> <span style="font-size:11px;">(Nív. ${data.level})</span><br><span style="color:#e74c3c; font-size:12px;">❤️ ${data.likes || 0} Likes</span></div>
+                                     <button class="like-btn" data-id="${doc.id}" style="background:#e74c3c; color:white; border:2px solid #333; padding:5px 10px; border-radius:10px; font-weight:bold; cursor:pointer;">❤️ Curtir</button>`;
+                    body.appendChild(row);
+                });
+                document.querySelectorAll('.like-btn').forEach(b => b.addEventListener('click', async (e) => { await updateDoc(doc(db, "pous", e.target.dataset.id), { "pouState.likes": increment(1) }); }));
+            });
+        });
+        document.getElementById('close-social').addEventListener('click', () => socModal.style.display = 'none');
     </script>
 </body>
 </html>
