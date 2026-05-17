@@ -5,165 +5,257 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pou Online Multiplayer</title>
     <style>
-        /* DESIGN DO APP - MOBILE FIRST */
+        /* DESIGN DO APP - INTERFACE VETORIAL DE JOGO CASUAL */
         :root {
             --bg-kitchen: #f39c12;
             --bg-bedroom: #2c3e50;
             --bg-social: #9b59b6;
+            --pou-skin: #b5835a;
         }
+        
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: 'Arial Black', sans-serif; overflow: hidden;
-            background-color: #ededed;
+            background-color: #1e1e24;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Arial Rounded MT Bold', 'Comic Sans MS', sans-serif;
         }
-        .screen { display: none; width: 100%; height: 100%; position: relative; }
-        .screen.active { display: flex; flex-direction: column; }
 
-        /* TELA DE LOGIN ESTILO SPLASH */
-        #auth-screen { background: #55efc4; align-items: center; justify-content: center; }
+        /* CONTEXTO DE TELA DO SMARTPHONE (Evita parecer um site de PC) */
+        .game-viewport {
+            width: 100vw;
+            height: 100vh;
+            max-width: 430px;
+            max-height: 860px;
+            background: #fff;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border-radius: 0;
+        }
+
+        @media (min-width: 440px) and (min-height: 500px) {
+            .game-viewport {
+                border: 8px solid #333;
+                border-radius: 35px;
+                height: 92vh;
+            }
+        }
+
+        .screen { display: none; width: 100%; height: 100%; position: relative; flex-direction: column; }
+        .screen.active { display: flex; }
+
+        /* TELA DE BOAS-VINDAS */
+        #auth-screen { 
+            background: linear-gradient(135deg, #55efc4, #81ecec); 
+            align-items: center; 
+            justify-content: center; 
+        }
         .auth-box {
-            background: white; padding: 30px; border-radius: 25px;
-            box-shadow: 0 12px 0px rgba(0,0,0,0.1); text-align: center; width: 80%; max-width: 340px;
+            background: #fff; padding: 30px 20px; border-radius: 30px;
+            border: 5px solid #333; text-align: center; width: 85%;
+            box-shadow: 0 10px 0 #333;
         }
-        .auth-box h1 { color: #2d3436; margin-bottom: 5px; font-size: 28px; }
+        .auth-box h1 { color: #333; font-size: 36px; margin: 0 0 15px 0; font-weight: 900; text-shadow: 2px 2px 0 #fff; }
         .auth-box input {
-            padding: 15px; width: 85%; margin: 20px 0; border: 3px solid #b2bec3;
-            border-radius: 15px; font-size: 16px; text-align: center; font-family: inherit;
+            padding: 15px; width: 90%; margin: 15px 0; border: 4px solid #333;
+            border-radius: 20px; font-size: 18px; text-align: center; font-weight: bold;
+            background: #f8f9fa; color: #333;
         }
-        .btn-green {
-            background: #2ecc71; color: white; padding: 15px 30px; border: none;
-            border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 6px 0 #27ae60; width: 95%;
-        }
-        .btn-green:active { transform: translateY(4px); box-shadow: 0 2px 0 #27ae60; }
 
-        /* HUD - BARRAS DE STATUS */
+        /* BOTÕES ESTILO POU (GORDOS COM BORDA E SOMBRA INFERIOR) */
+        .pou-btn {
+            background: #2ecc71; color: white; padding: 15px 30px; border: 4px solid #333;
+            border-radius: 20px; font-size: 20px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 6px 0 #1e7e34; width: 90%; font-family: inherit;
+        }
+        .pou-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #1e7e34; }
+
+        /* HUD SUPERIOR */
         #hud {
-            background: #fff; padding: 15px; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 4px solid #dfe6e9; z-index: 10;
+            background: #f7f9fa; padding: 12px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 5px solid #333; z-index: 10; height: 85px;
         }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; width: 55%; }
-        .stat-bar { display: flex; align-items: center; gap: 5px; background: #eee; padding: 4px; border-radius: 10px; }
-        .progress { width: 100%; height: 14px; background: #b2bec3; border-radius: 8px; overflow: hidden; }
-        .fill { height: 100%; width: 100%; background: #2ecc71; transition: width 0.3s; }
-        .user-info { display: flex; flex-direction: column; align-items: flex-end; font-size: 14px; color: #2d3436; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 50%; }
+        .stat-bar { display: flex; align-items: center; gap: 4px; background: #e9ecef; border: 2px solid #333; padding: 2px; border-radius: 8px; font-size: 14px;}
+        .progress { width: 100%; height: 12px; background: #dee2e6; border-radius: 5px; overflow: hidden; }
+        .fill { height: 100%; width: 100%; background: #2ecc71; border-radius: 5px; transition: width 0.3s; }
+        
+        .user-info { display: flex; flex-direction: column; align-items: flex-end; font-size: 13px; color: #333; font-weight: bold; line-height: 1.3;}
+        .coin-tag { background: #ffeaa7; border: 2px solid #333; padding: 2px 8px; border-radius: 12px; margin-top: 2px; font-size: 14px;}
 
-        /* CÔMODOS DO JOGO */
+        /* BOTÃO DE CONFIGURAÇÕES FIXO NO TOPO */
+        #btn-settings-toggle {
+            background: #dfe6e9; border: 3px solid #333; font-size: 20px;
+            width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 3px 0 #333; margin-left: 8px;
+        }
+        #btn-settings-toggle:active { transform: translateY(2px); box-shadow: 0 1px 0 #333; }
+
+        /* CÔMODOS E NAVEGAÇÃO */
         #room-container { flex: 1; position: relative; display: flex; align-items: center; justify-content: space-between; }
-        #room-content { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+        #room-content { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transition: background 0.4s ease; }
+        
         .kitchen { background-color: var(--bg-kitchen); }
         .bedroom { background-color: var(--bg-bedroom); }
-        .nav-btn { background: rgba(0,0,0,0.2); border: none; color: white; padding: 20px 15px; cursor: pointer; font-size: 24px; border-radius: 10px; margin: 10px; z-index: 5;}
+        
+        .nav-btn { 
+            background: rgba(255,255,255,0.4); border: 3px solid #333; color: #333; 
+            padding: 15px 10px; cursor: pointer; font-size: 20px; font-weight: bold;
+            border-radius: 15px; margin: 8px; z-index: 5; box-shadow: 0 4px 0 #333;
+        }
+        .nav-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #333; }
 
-        /* O POU REALISTA (CSS ART) */
+        /* O POU ANATÔMICO */
         #pou-character {
-            width: 170px; height: 150px; background: #b5835a;
+            width: 175px; height: 155px; background: var(--pou-skin);
             border-radius: 50% 50% 43% 43% / 63% 63% 37% 37%;
-            position: relative; box-shadow: inset 0 -12px 0 rgba(0,0,0,0.15), 0 15px 20px rgba(0,0,0,0.3);
+            position: relative; box-shadow: inset 0 -15px 0 rgba(0,0,0,0.18), 0 15px 0px rgba(0,0,0,0.15);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: transform 0.1s, background 0.3s;
         }
-        .eyes { display: flex; gap: 24px; margin-top: -20px; }
-        .eye { width: 42px; height: 42px; background: white; border-radius: 50%; border: 3px solid #333; position: relative; display: flex; align-items: center; justify-content: center; }
-        .pupil { width: 16px; height: 16px; background: #000; border-radius: 50%; }
-        .mouth { width: 35px; height: 15px; border: 4px solid #333; border-top: none; border-radius: 0 0 20px 20px; margin-top: 15px; transition: all 0.2s; }
+        .eyes { display: flex; gap: 24px; margin-top: -25px; }
+        .eye { width: 44px; height: 44px; background: white; border-radius: 50%; border: 4px solid #333; position: relative; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
+        .pupil { width: 16px; height: 16px; background: #000; border-radius: 50%; transition: all 0.1s;}
+        .mouth { width: 36px; height: 16px; border: 4px solid #333; border-top: none; border-radius: 0 0 20px 20px; margin-top: 18px; transition: all 0.1s; }
         
-        /* Expressões Animadas */
-        #pou-character.eating .mouth { width: 25px; height: 25px; background: #333; border-radius: 50%; }
-        #pou-character.sleeping .eye { height: 4px; background: #333; border-radius: 0; border: none; }
-        #pou-character.sleeping .mouth { width: 20px; height: 4px; border: none; background: #333; border-radius: 2px; }
+        /* Modificadores de Expressão */
+        #pou-character.eating .mouth { width: 24px; height: 24px; background: #333; border-radius: 50%; }
+        #pou-character.sleeping .eye { height: 5px; background: #333; border-radius: 0; border: none; width: 38px;}
+        #pou-character.sleeping .pupil { display: none; }
+        #pou-character.sleeping .mouth { width: 22px; height: 4px; border: none; background: #333; border-radius: 2px; }
 
-        /* ELEMENTOS INTERATIVOS DOS CÔMODOS */
-        #room-actions { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; }
-        .action-btn { background: white; border: 3px solid #333; border-radius: 50%; width: 65px; height: 65px; font-size: 28px; cursor: pointer; box-shadow: 0 5px 0 #333; display: flex; align-items: center; justify-content: center; }
-        .action-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #333; }
+        /* PRATELEIRA DE ITENS / CAIXA DE EMOJIS */
+        #room-actions { position: absolute; bottom: 25px; width: 100%; display: flex; justify-content: center; gap: 15px; }
+        .emoji-box { 
+            background: #fff; border: 4px solid #333; border-radius: 20px; 
+            width: 75px; height: 75px; font-size: 36px; cursor: pointer; 
+            box-shadow: 0 6px 0 #333; display: flex; align-items: center; justify-content: center;
+            transition: transform 0.05s;
+        }
+        .emoji-box:active { transform: translateY(4px); box-shadow: 0 2px 0 #333; }
 
-        /* ABA INFERIOR E BOTÕES */
-        #game-menu { background: white; padding: 12px; display: flex; justify-content: space-around; border-top: 4px solid #dfe6e9; }
-        .menu-btn { padding: 12px 20px; border-radius: 12px; border: none; font-family: inherit; font-weight: bold; cursor: pointer; font-size: 14px; }
-        #btn-open-social { background: var(--bg-social); color: white; }
-        #btn-save-account { background: #3498db; color: white; display: none; }
+        /* BANNER INFERIOR SOCIAL */
+        #game-menu { background: #f7f9fa; padding: 12px; display: flex; justify-content: center; border-top: 5px solid #333; height: 75px;}
+        .social-trigger-btn { background: var(--bg-social); color: white; border: 3px solid #333; box-shadow: 0 4px 0 #333; width: 90%; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit;}
+        .social-trigger-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #333; }
 
-        /* MODAL MULTIPLAYER */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; }
-        .modal-content { background: white; margin: 12% auto; padding: 25px; width: 85%; max-width: 400px; border-radius: 20px; border: 4px solid #333; position: relative; }
-        .close-btn { position: absolute; right: 15px; top: 10px; font-size: 30px; cursor: pointer; }
-        .player-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 2px solid #eee; }
+        /* MODAIS INTERNOS ESTILIZADOS */
+        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; }
+        .modal-content { background: white; margin: 25% auto; padding: 25px 20px; width: 85%; border-radius: 25px; border: 5px solid #333; position: relative; box-shadow: 0 15px 0 rgba(0,0,0,0.2); }
+        .close-btn { position: absolute; right: 15px; top: 10px; font-size: 32px; cursor: pointer; color: #333; font-weight: bold;}
+        
+        .player-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 3px dashed #b2bec3; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-weight: bold; font-size: 16px;}
     </style>
 </head>
 <body>
 
-    <!-- 1. TELA DE LOGIN ANÔNIMO -->
-    <div id="auth-screen" class="screen active">
-        <div class="auth-box">
-            <h1>Pou Online 🥔</h1>
-            <input type="text" id="pou-nickname-input" placeholder="Nome do seu Pou" maxlength="12">
-            <button id="btn-play-guest" class="btn-green">JOGAR</button>
+    <div class="game-viewport">
+
+        <!-- 1. TELA DE LOGIN ANÔNIMO -->
+        <div id="auth-screen" class="screen active">
+            <div class="auth-box">
+                <h1>Pou Online 🥔</h1>
+                <input type="text" id="pou-nickname-input" placeholder="Apelido do Pou" maxlength="12">
+                <button id="btn-play-guest" class="pou-btn">JOGAR AGORA</button>
+            </div>
         </div>
-    </div>
 
-    <!-- 2. TELA DO JOGO PRINCIPAL -->
-    <div id="game-screen" class="screen">
-        <header id="hud">
-            <div class="stats-grid">
-                <div class="stat-bar">🍖<div class="progress"><div id="bar-hunger" class="fill"></div></div></div>
-                <div class="stat-bar">❤️<div class="progress"><div id="bar-health" class="fill"></div></div></div>
-                <div class="stat-bar">🕹️<div class="progress"><div id="bar-fun" class="fill"></div></div></div>
-                <div class="stat-bar">⚡<div class="progress"><div id="bar-energy" class="fill"></div></div></div>
-            </div>
-            <div class="user-info">
-                <span id="pou-name">Pou</span>
-                <span id="pou-level">Nível 1</span>
-                <span id="pou-coins">🪙 150</span>
-            </div>
-        </header>
+        <!-- 2. TELA DO JOGO PRINCIPAL -->
+        <div id="game-screen" class="screen">
+            <header id="hud">
+                <div class="stats-grid">
+                    <div class="stat-bar">🍖<div class="progress"><div id="bar-hunger" class="fill"></div></div></div>
+                    <div class="stat-bar">❤️<div class="progress"><div id="bar-health" class="fill"></div></div></div>
+                    <div class="stat-bar">🕹️<div class="progress"><div id="bar-fun" class="fill"></div></div></div>
+                    <div class="stat-bar">⚡<div class="progress"><div id="bar-energy" class="fill"></div></div></div>
+                </div>
+                <div class="user-info">
+                    <span id="pou-name" style="font-size: 16px;">Pou</span>
+                    <span id="pou-level" style="color: #7f8c8d;">Nível 1</span>
+                    <div class="coin-tag" id="pou-coins">🪙 150</div>
+                </div>
+                <!-- Botão discreto de configurações (Engrenagem) -->
+                <button id="btn-settings-toggle">⚙️</button>
+            </header>
 
-        <main id="room-container">
-            <button id="nav-left" class="nav-btn">◀</button>
-            
-            <div id="room-content" class="kitchen">
-                <!-- O POU -->
-                <div id="pou-character">
-                    <div class="eyes">
-                        <div class="eye"><div class="pupil"></div></div>
-                        <div class="eye"><div class="pupil"></div></div>
+            <main id="room-container">
+                <button id="nav-left" class="nav-btn">◀</button>
+                
+                <div id="room-content" class="kitchen">
+                    <!-- O POU ANATÔMICO -->
+                    <div id="pou-character">
+                        <div class="eyes">
+                            <div class="eye"><div class="pupil"></div></div>
+                            <div class="eye"><div class="pupil"></div></div>
+                        </div>
+                        <div class="mouth"></div>
                     </div>
-                    <div class="mouth"></div>
+
+                    <!-- CAIXAS DE EMOJIS INTERATIVAS -->
+                    <div id="room-actions">
+                        <button id="action-trigger" class="emoji-box">🍔</button>
+                    </div>
                 </div>
 
-                <!-- AÇÕES DO CÔMODO (MUDAM VIA JS) -->
-                <div id="room-actions">
-                    <button id="action-trigger" class="action-btn">🍔</button>
+                <button id="nav-right" class="nav-btn">▶</button>
+            </main>
+
+            <footer id="game-menu">
+                <button id="btn-open-social" class="social-trigger-btn">🌐 POU MUNDO ONLINE</button>
+            </footer>
+        </div>
+
+        <!-- 3. MODAL DE CONFIGURAÇÕES (Sons, Música e Backup Google) -->
+        <div id="settings-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" id="close-settings">&times;</span>
+                <h2 style="margin-top: 0; text-align: center; border-bottom: 4px solid #333; padding-bottom: 5px;">Configurações ⚙️</h2>
+                
+                <div class="setting-row">
+                    <span>Efeitos Sonoros</span>
+                    <button id="btn-toggle-sfx" class="pou-btn" style="width: auto; padding: 5px 15px; font-size: 14px; box-shadow: 0 3px 0 #1e7e34;">LIGADO</button>
                 </div>
-            </div>
-
-            <button id="nav-right" class="nav-btn">▶</button>
-        </main>
-
-        <footer id="game-menu">
-            <button id="btn-open-social" class="menu-btn">🌐 AMIGOS ONLINE</button>
-            <button id="btn-save-account" class="menu-btn">💾 SALVAR NO GOOGLE</button>
-        </footer>
-    </div>
-
-    <!-- 3. MODAL SOCIAL MULTIPLAYER -->
-    <div id="social-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" id="close-modal">&times;</span>
-            <h2 style="margin-top: 0;">Pous do Servidor 🌍</h2>
-            <div id="social-body" style="max-height: 300px; overflow-y: auto;">
-                <!-- Preenchido via Firebase -->
+                <div class="setting-row">
+                    <span>Música de Fundo</span>
+                    <button id="btn-toggle-music" class="pou-btn" style="width: auto; padding: 5px 15px; font-size: 14px; box-shadow: 0 3px 0 #1e7e34;">LIGADO</button>
+                </div>
+                
+                <div style="margin-top: 25px; text-align: center;">
+                    <button id="btn-save-account" class="pou-btn" style="background: #3498db; box-shadow: 0 5px 0 #217dbb; font-size: 16px; width: 100%;">💾 Sincronizar com Google</button>
+                    <p id="txt-account-status" style="font-size: 11px; color: #7f8c8d; margin-top: 5px; font-weight: bold;">Seu progresso está salvo localmente como Visitante.</p>
+                </div>
             </div>
         </div>
+
+        <!-- 4. MODAL SOCIAL MULTIPLAYER -->
+        <div id="social-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" id="close-social">&times;</span>
+                <h2 style="margin-top: 0; text-align: center; border-bottom: 4px solid #333; padding-bottom: 5px;">Pous no Mundo 🌍</h2>
+                <div id="social-body" style="max-height: 280px; overflow-y: auto; margin-top: 10px;">
+                    <!-- Sincronizado via Firestore -->
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- INTEGRAÇÃO COMPLETA DO FIREBASE EM UM SÓ LUGAR -->
+    <!-- INTEGRAÇÃO COMPLETA FIREBASE E CONTROLADORES DE ÁUDIO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInAnonymously, GoogleAuthProvider, linkWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Configuração do seu Projeto LippezinGame
         const firebaseConfig = {
             apiKey: "AIzaSyDKtqyAvo8nNebINI6iIbFwyYyXomp-55M",
             authDomain: "lippezingame.firebaseapp.com",
@@ -178,19 +270,79 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ESTADO GLOBAL DO JOGO LOCAL
         let pou = null;
         let userDocRef = null;
-        let currentRoom = "kitchen"; // inicial
+        let currentRoom = "kitchen";
         const rooms = ["kitchen", "bedroom"];
 
-        // ELEMENTOS DA UI
-        const pouChar = document.getElementById('pou-character');
-        const actionTrigger = document.getElementById('action-trigger');
-        const roomContent = document.getElementById('room-content');
+        // ESTADO DE CONFIGURAÇÕES DE ÁUDIO (SINTETIZADOS PARA NÃO DEPENDER DE ARQUIVOS EXTERNOS .MP3)
+        let sfxEnabled = true;
+        let musicEnabled = true;
+        let audioCtx = null;
+        let musicInterval = null;
 
-        // 1. SISTEMA DE LOGIN ANÔNIMO + SALVAR CONTA
+        // INICIALIZA ÁUDIO WEB
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // EMULADOR DE EFEITO SONORO (BEEP DO POU)
+        function playTone(freq, type, duration) {
+            if (!sfxEnabled || !audioCtx) return;
+            try {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e){}
+        }
+
+        // MOTOR DE MÚSICA EM LOOP EMULADA (Estilo retrô/casual 8-bit Pou)
+        function startMusicLoop() {
+            if (musicInterval) clearInterval(musicInterval);
+            let notes = [261.63, 293.66, 329.63, 349.23, 392.00, 349.23, 329.63, 293.66]; // Melodia boba cíclica
+            let currentNote = 0;
+            musicInterval = setInterval(() => {
+                if (musicEnabled && audioCtx) {
+                    playTone(notes[currentNote], 'triangle', 0.15);
+                    currentNote = (currentNote + 1) % notes.length;
+                }
+            }, 400);
+        }
+
+        // CONTROLES DE UI DO MODAL DE CONFIGURAÇÕES
+        document.getElementById('btn-settings-toggle').addEventListener('click', () => {
+            initAudio();
+            document.getElementById('settings-modal').style.display = 'block';
+        });
+        document.getElementById('close-settings').addEventListener('click', () => document.getElementById('settings-modal').style.display = 'none');
+
+        document.getElementById('btn-toggle-sfx').addEventListener('click', (e) => {
+            sfxEnabled = !sfxEnabled;
+            e.target.innerText = sfxEnabled ? "LIGADO" : "DESLIGADO";
+            e.target.style.background = sfxEnabled ? "#2ecc71" : "#95a5a6";
+            playTone(300, 'sine', 0.1);
+        });
+
+        document.getElementById('btn-toggle-music').addEventListener('click', (e) => {
+            musicEnabled = !musicEnabled;
+            e.target.innerText = musicEnabled ? "LIGADO" : "DESLIGADO";
+            e.target.style.background = musicEnabled ? "#2ecc71" : "#95a5a6";
+            if(musicEnabled) startMusicLoop();
+        });
+
+        // AUTENTICAÇÃO ANÔNIMA
         document.getElementById('btn-play-guest').addEventListener('click', async () => {
+            initAudio();
+            if(musicEnabled) startMusicLoop();
             const nameInput = document.getElementById('pou-nickname-input').value.trim();
             sessionStorage.setItem('pou_name', nameInput || "Pou");
             await signInAnonymously(auth);
@@ -202,6 +354,7 @@
                 await linkWithPopup(auth.currentUser, provider);
                 alert("Progresso salvo com sucesso na sua conta Google!");
                 document.getElementById('btn-save-account').style.display = 'none';
+                document.getElementById('txt-account-status').innerText = "Seu Pou está permanentemente salvo no Google! ☁️";
             } catch (e) { alert("Erro ao salvar conta: " + e.message); }
         });
 
@@ -209,7 +362,11 @@
             if (user) {
                 document.getElementById('auth-screen').classList.remove('active');
                 document.getElementById('game-screen').classList.add('active');
-                document.getElementById('btn-save-account').style.display = user.isAnonymous ? 'block' : 'none';
+                
+                if(!user.isAnonymous) {
+                    document.getElementById('btn-save-account').style.display = 'none';
+                    document.getElementById('txt-account-status').innerText = "Seu Pou está permanentemente salvo no Google! ☁️";
+                }
 
                 userDocRef = doc(db, "pous", user.uid);
                 const docSnap = await getDoc(userDocRef);
@@ -217,7 +374,6 @@
                 if (docSnap.exists()) {
                     pou = docSnap.data();
                 } else {
-                    // Novo Pou criado se não existir dados na nuvem
                     pou = {
                         name: sessionStorage.getItem('pou_name') || "Pou",
                         level: 1, xp: 0, coins: 150,
@@ -227,29 +383,23 @@
                     await setDoc(userDocRef, pou);
                 }
                 updateUI();
-                startGameLoop();
+                setInterval(runGameLoop, 8000);
             }
         });
 
-        // 2. GAME LOOP (DECAIMENTO DOS STATUS EM TEMPO REAL)
-        function startGameLoop() {
-            setInterval(() => {
-                if (!pou) return;
-                
-                // Diminui os status aos poucos
-                if (pou.isSleeping) {
-                    pou.energy = Math.min(100, pou.energy + 5);
-                } else {
-                    pou.hunger = Math.max(0, pou.hunger - 1);
-                    pou.energy = Math.max(0, pou.energy - 0.5);
-                    pou.fun = Math.max(0, pou.fun - 1);
-                }
-
-                if (pou.hunger < 20) pou.health = Math.max(0, pou.health - 2);
-
-                updateUI();
-                saveData();
-            }, 8000); // Roda a cada 8 segundos para fins de teste rápido
+        // CICLO DE DECAIMENTO INTERNO
+        function runGameLoop() {
+            if (!pou) return;
+            if (pou.isSleeping) {
+                pou.energy = Math.min(100, pou.energy + 6);
+            } else {
+                pou.hunger = Math.max(0, pou.hunger - 1);
+                pou.energy = Math.max(0, pou.energy - 0.6);
+                pou.fun = Math.max(0, pou.fun - 1);
+            }
+            if (pou.hunger < 20) pou.health = Math.max(0, pou.health - 2);
+            updateUI();
+            updateDoc(userDocRef, pou);
         }
 
         function updateUI() {
@@ -262,32 +412,25 @@
             document.getElementById('pou-level').innerText = `Nível ${pou.level}`;
             document.getElementById('pou-coins').innerText = `🪙 ${pou.coins}`;
 
-            // Troca de animações visuais do Pou
+            const pouChar = document.getElementById('pou-character');
             pouChar.className = "";
-            if (pou.isSleeping) {
-                pouChar.classList.add('sleeping');
-            }
+            if (pou.isSleeping) pouChar.classList.add('sleeping');
         }
 
-        async function saveData() {
-            if (userDocRef && pou) {
-                await updateDoc(userDocRef, pou);
-            }
-        }
-
-        // 3. LOGICA DOS CÔMODOS E INTERAÇÃO REAL
+        // MOVIMENTAÇÃO DE CÔMODOS
         document.getElementById('nav-right').addEventListener('click', () => switchRoom(1));
         document.getElementById('nav-left').addEventListener('click', () => switchRoom(-1));
 
         function switchRoom(dir) {
+            playTone(450, 'sine', 0.05);
             let idx = rooms.indexOf(currentRoom) + dir;
             if (idx < 0) idx = rooms.length - 1;
             if (idx >= rooms.length) idx = 0;
             currentRoom = rooms[idx];
             
-            roomContent.className = currentRoom;
+            document.getElementById('room-content').className = currentRoom;
+            const actionTrigger = document.getElementById('action-trigger');
 
-            // Altera o botão de ação dependendo do cômodo
             if (currentRoom === "kitchen") {
                 actionTrigger.innerText = "🍔";
             } else if (currentRoom === "bedroom") {
@@ -295,74 +438,71 @@
             }
         }
 
-        // Cliques no botão de ação de cada cômodo
-        actionTrigger.addEventListener('click', () => {
+        // CAIXA DE AÇÕES INTERATIVAS (Dar comida / Apagar luz)
+        document.getElementById('action-trigger').addEventListener('click', () => {
+            const pouChar = document.getElementById('pou-character');
             if (currentRoom === "kitchen") {
-                // Mecânica de Alimentar
                 if (pou.coins >= 5) {
                     pou.hunger = Math.min(100, pou.hunger + 15);
                     pou.coins -= 5;
-                    pou.xp += 10;
-                    if(pou.xp >= pou.level * 50) { pou.level++; pou.xp = 0; }
+                    pou.xp += 15;
+                    if(pou.xp >= pou.level * 60) { pou.level++; pou.xp = 0; }
                     
-                    // Animação de comer
+                    // Som clássico de mastigação ("crunch") emulada
+                    playTone(150, 'square', 0.1);
+                    setTimeout(() => playTone(120, 'square', 0.1), 120);
+
                     pouChar.classList.add('eating');
-                    setTimeout(() => pouChar.classList.remove('eating'), 500);
-                } else { alert("Sem moedas suficientes!"); }
+                    setTimeout(() => pouChar.classList.remove('eating'), 400);
+                } else { alert("Você não tem moedas suficientes!"); }
             } 
             else if (currentRoom === "bedroom") {
-                // Mecânica de Dormir
                 pou.isSleeping = !pou.isSleeping;
-                actionTrigger.innerText = pou.isSleeping ? "💡" : "🌙";
-                if(pou.isSleeping) {
-                    roomContent.style.backgroundColor = "#111";
-                } else {
-                    roomContent.style.backgroundColor = "var(--bg-bedroom)";
-                }
+                document.getElementById('action-trigger').innerText = pou.isSleeping ? "💡" : "🌙";
+                document.getElementById('room-content').style.backgroundColor = pou.isSleeping ? "#111c24" : "var(--bg-bedroom)";
+                playTone(pou.isSleeping ? 200 : 600, 'sine', 0.1);
             }
             updateUI();
-            saveData();
+            updateDoc(userDocRef, pou);
         });
 
-        // 4. MULTIPLAYER REAL-TIME (SINCRO DE OUTROS JOGADORES)
-        const modal = document.getElementById('social-modal');
+        // MUNDO ONLINE MULTIPLAYER (FIRESTORE REALTIME SYNC)
         document.getElementById('btn-open-social').addEventListener('click', () => {
-            modal.style.display = 'block';
+            playTone(500, 'sine', 0.05);
+            document.getElementById('social-modal').style.display = 'block';
             
-            // Escuta mudanças na coleção global de pous e lista em tempo real
             onSnapshot(collection(db, "pous"), (snapshot) => {
                 const socialBody = document.getElementById('social-body');
                 socialBody.innerHTML = "";
 
                 snapshot.forEach((otherDoc) => {
                     const data = otherDoc.data();
-                    if (otherDoc.id === auth.currentUser.uid) return; // ignora a si mesmo
+                    if (otherDoc.id === auth.currentUser.uid) return;
 
                     const row = document.createElement('div');
                     row.className = 'player-row';
                     row.innerHTML = `
                         <div>
-                            <strong>${data.name}</strong> <span style="font-size:12px;">(Nív. ${data.level})</span>
-                            <br><span style="font-size:11px; color:#7f8c8d;">❤️ ${data.likes || 0} curtidas</span>
+                            <span style="font-size:16px; font-weight:bold; color:#333;">${data.name}</span> 
+                            <span style="font-size:12px; color:#7f8c8d;">(Nív. ${data.level})</span>
+                            <br><span style="font-size:13px; color:#e74c3c;">❤️ ${data.likes || 0} curtidas</span>
                         </div>
-                        <button class="like-btn" data-id="${otherDoc.id}" style="background:#e74c3c; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">❤️ Curtir</button>
+                        <button class="like-btn" data-id="${otherDoc.id}" style="background:#e74c3c; color:white; border:3px solid #333; padding:6px 12px; border-radius:12px; font-weight:bold; cursor:pointer; box-shadow:0 3px 0 #333;">❤️ Like</button>
                     `;
                     socialBody.appendChild(row);
                 });
 
-                // Botão de curtida síncrono funcional
                 document.querySelectorAll('.like-btn').forEach(btn => {
                     btn.addEventListener('click', async (e) => {
                         const targetId = e.target.dataset.id;
+                        playTone(650, 'sine', 0.08);
                         await updateDoc(doc(db, "pous", targetId), { likes: increment(1) });
-                        alert("Você deu um Like no Pou dele em tempo real!");
                     });
                 });
             });
         });
 
-        document.getElementById('close-modal').addEventListener('click', () => modal.style.display = 'none');
+        document.getElementById('close-social').addEventListener('click', () => document.getElementById('social-modal').style.display = 'none');
     </script>
 </body>
 </html>
-
