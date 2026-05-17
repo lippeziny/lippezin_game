@@ -2,121 +2,201 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <!-- Tags Anti-Cache para o navegador sempre buscar a versão nova -->
+    <meta http-equiv="cache-control" content="no-cache, must-revalidate, post-check=0, pre-check=0">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="pragma" content="no-cache">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Pou Online Multiplayer</title>
+    <title>Pou Online - Ultra Update</title>
     <style>
         :root { --pou-skin: #b5835a; }
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; touch-action: manipulation; }
-        html, body { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; background-color: #222; display: flex; align-items: center; justify-content: center; font-family: sans-serif; overflow: hidden; }
-        .game-viewport { width: 100%; height: 100%; max-width: 450px; position: relative; display: flex; flex-direction: column; background: #ffeaa7; overflow: hidden; }
-        @media (min-width: 460px) { .game-viewport { height: 95%; border: 8px solid #2d3436; border-radius: 30px; } }
-        .screen { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; flex-direction: column; overflow: hidden; z-index: 1; }
+        html, body { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; background-color: #111; display: flex; align-items: center; justify-content: center; font-family: 'Arial Rounded MT Bold', sans-serif; overflow: hidden; }
+        
+        .game-viewport { width: 100%; height: 100%; max-width: 450px; position: relative; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
+        @media (min-width: 460px) { .game-viewport { height: 95%; border: 8px solid #2d3436; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); } }
+        
+        .screen { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; flex-direction: column; z-index: 1; }
         .screen.active { display: flex; }
-        #dynamic-wallpaper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background-color: #f39c12; }
-        .tex-stripes { background-image: linear-gradient(90deg, rgba(255,255,255,0.15) 50%, transparent 50%); background-size: 35px 100%; }
-        .tex-chess { background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%), linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%); background-size: 30px 30px; background-position: 0 0, 15px 15px; }
-        #auth-screen { background: #55efc4; align-items: center; justify-content: center; z-index: 100; }
-        .auth-box { background: #fff; padding: 25px 20px; border-radius: 25px; border: 4px solid #333; text-align: center; width: 85%; }
-        .auth-box input { padding: 12px; width: 90%; margin: 15px 0; border: 4px solid #333; border-radius: 15px; font-size: 18px; text-align: center; font-weight: bold; }
-        .pou-btn { background: #2ecc71; color: white; padding: 12px 25px; border: 4px solid #333; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        #hud { flex: 0 0 auto; padding: 12px; display: flex; justify-content: space-between; align-items: center; z-index: 10; background: rgba(0,0,0,0.4); color: white; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; width: 45%; }
-        .stat-bar { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.9); border: 2px solid #333; padding: 2px 5px; border-radius: 6px; font-size: 11px; color: #333; font-weight: bold;}
+
+        /* TELA DE LOGIN */
+        #auth-screen { background: linear-gradient(135deg, #55efc4, #00b894); align-items: center; justify-content: center; z-index: 100; }
+        .auth-box { background: #fff; padding: 30px 20px; border-radius: 25px; border: 4px solid #333; text-align: center; width: 85%; box-shadow: 0 8px 0 rgba(0,0,0,0.2); }
+        .auth-box input { padding: 12px; width: 90%; margin: 15px 0; border: 3px solid #333; border-radius: 12px; font-size: 18px; text-align: center; font-weight: bold; }
+        .btn-action { background: #2ecc71; color: white; padding: 12px 20px; border: 3px solid #333; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #1e7e34; transition: transform 0.1s; }
+        .btn-action:active { transform: translateY(4px); box-shadow: 0 0 0 #1e7e34; }
+
+        /* INTERFACE (HUD) - AGORA COM 5 STATUS */
+        #hud { flex: 0 0 auto; padding: 10px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); color: white; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 55%; }
+        .stat-bar { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.95); border: 2px solid #333; padding: 2px 4px; border-radius: 6px; font-size: 11px; color: #333; font-weight: bold;}
         .progress { width: 100%; height: 8px; background: #dfe6e9; border-radius: 4px; overflow: hidden; }
-        .fill { height: 100%; width: 100%; background: #2ecc71; }
-        #room-container { flex: 1 1 auto; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; padding: 0 10px; }
-        #room-content { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .nav-btn { background: white; border: 3px solid #333; padding: 12px 15px; cursor: pointer; font-size: 20px; font-weight: bold; border-radius: 12px; z-index: 15; }
-        #pou-character { width: 140px; height: 120px; background: var(--pou-skin); border-radius: 50% 50% 43% 43% / 63% 63% 37% 37%; position: relative; border: 3px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3; }
-        .eyes { display: flex; gap: 18px; }
-        .eye { width: 36px; height: 36px; background: white; border-radius: 50%; border: 3px solid #333; display: flex; align-items: center; justify-content: center; }
-        .pupil { width: 14px; height: 14px; background: #000; border-radius: 50%; }
-        .mouth { width: 30px; height: 12px; border: 3px solid #333; border-top: none; border-radius: 0 0 18px 18px; margin-top: 12px; }
-        #room-actions { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 10; }
-        .emoji-box, #paint-bucket { background: #fff; border: 3.5px solid #333; border-radius: 18px; width: 65px; height: 65px; font-size: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        #game-menu { flex: 0 0 65px; background: #fff; border-top: 4px solid #333; display: flex; justify-content: center; align-items: center; padding: 8px; z-index: 10; }
-        .social-trigger-btn { background: #9b59b6; color: white; border: 3px solid #333; width: 95%; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; height: 45px; }
-        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; padding: 15px; }
-        .modal-content { background: white; margin: auto; padding: 15px; width: 100%; max-width: 380px; border-radius: 20px; border: 4px solid #333; position: relative; display: flex; flex-direction: column; max-height: 90%; top: 5%; }
-        .close-btn { position: absolute; right: 12px; top: 8px; font-size: 28px; cursor: pointer; font-weight: bold; }
-        .social-layout { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 150px; margin-top: 10px; }
-        .player-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border: 2.5px solid #333; padding: 8px; border-radius: 10px; color: #333; }
-        .chat-section { border-top: 3px solid #333; margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; flex: 1; min-height: 150px; }
-        .chat-messages { flex: 1; overflow-y: auto; background: #f1f2f6; border: 2px solid #333; border-radius: 8px; padding: 8px; font-size: 13px; margin-bottom: 8px; color: #333; text-align: left; }
-        .msg-line { margin-bottom: 5px; word-break: break-word; }
-        .chat-input-row { display: flex; gap: 5px; height: 40px; }
-        .chat-input-row input { flex: 1; padding: 8px; border: 2px solid #333; border-radius: 8px; font-size: 14px; }
-        .chat-input-row button { background: #3498db; color: white; border: 2px solid #333; border-radius: 8px; padding: 0 15px; font-weight: bold; cursor: pointer; }
-        .yard-grass { bottom: 0; left: 0; width: 100%; height: 25%; background: #2ecc71; border-top: 4px solid #333; z-index: 2; position: absolute; }
+        .fill { height: 100%; width: 100%; background: #2ecc71; transition: width 0.3s, background 0.3s; }
+        .user-info { display: flex; flex-direction: column; align-items: flex-end; font-size: 13px; text-shadow: 1px 1px 0 #000; font-weight: bold; }
+        .coin-tag { background: #f1c40f; border: 2px solid #333; padding: 2px 8px; border-radius: 10px; color: #333; text-shadow: none; margin-top: 4px; }
+        #btn-settings-toggle { background: #fff; border: 2px solid #333; font-size: 16px; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; box-shadow: 0 3px 0 #333; margin-left: 5px; }
+
+        /* NAVEGAÇÃO E CENÁRIO */
+        #room-container { flex: 1; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; padding: 0 5px; }
+        #room-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; transition: background 0.4s; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+        .nav-btn { background: rgba(255,255,255,0.8); border: 3px solid #333; padding: 12px; cursor: pointer; font-size: 20px; font-weight: bold; border-radius: 50%; z-index: 15; box-shadow: 0 4px 0 #333; }
+        
+        /* O POU E ESTADOS */
+        #pou-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #pou-character { width: 150px; height: 130px; background: var(--pou-skin); border-radius: 50% 50% 43% 43% / 63% 63% 37% 37%; position: relative; border: 4px solid #2d2d2d; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset -10px -15px 0 rgba(0,0,0,0.15), 0 15px 10px rgba(0,0,0,0.2); }
+        .eyes { display: flex; gap: 20px; margin-top: -10px; }
+        .eye { width: 40px; height: 40px; background: white; border-radius: 50%; border: 4px solid #333; display: flex; align-items: center; justify-content: center; position: relative; }
+        .pupil { width: 16px; height: 16px; background: #000; border-radius: 50%; transition: transform 0.1s; }
+        .mouth { width: 35px; height: 15px; border: 4px solid #333; border-top: none; border-radius: 0 0 20px 20px; margin-top: 15px; transition: all 0.2s; }
+        
+        .dirt-overlay { position: absolute; width: 100%; height: 100%; top: 0; left: 0; background-image: radial-gradient(circle at 30% 70%, rgba(101, 67, 33, 0.6) 10%, transparent 15%), radial-gradient(circle at 70% 40%, rgba(101, 67, 33, 0.5) 8%, transparent 12%); display: none; border-radius: inherit; }
+        
+        #pou-wrapper.sick .mouth { border-top: 4px solid #333; border-bottom: none; border-radius: 20px 20px 0 0; height: 10px; margin-top: 20px; }
+        #pou-wrapper.sick .eye { height: 25px; border-radius: 20px 20px 50% 50%; background: #ffefd5; }
+        #pou-wrapper.dirty .dirt-overlay { display: block; }
+        #pou-wrapper.sleeping .eye { height: 6px; background: #333; border: none; width: 35px; }
+        #pou-wrapper.sleeping .pupil { display: none; }
+
+        /* BOTÕES DE INTERAÇÃO (3 POR SALA) */
+        #room-actions { position: absolute; bottom: 15px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 10; }
+        .action-btn { background: #fff; border: 3px solid #333; border-radius: 15px; width: 65px; height: 65px; font-size: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 0 #333; transition: transform 0.1s; }
+        .action-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #333; }
+
+        /* RODAPÉ E MODAIS */
+        #game-menu { flex: 0 0 65px; background: #ecf0f1; border-top: 4px solid #333; display: flex; justify-content: center; align-items: center; padding: 8px; z-index: 10; }
+        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; padding: 15px; backdrop-filter: blur(3px); }
+        .modal-content { background: white; margin: auto; padding: 20px; width: 100%; max-width: 380px; border-radius: 20px; border: 4px solid #333; position: relative; max-height: 90%; top: 5%; overflow-y: auto; }
+        .close-btn { position: absolute; right: 15px; top: 10px; font-size: 30px; cursor: pointer; font-weight: bold; color: #e74c3c; }
+        
+        .settings-btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; font-size: 15px; font-weight: bold; border-radius: 12px; border: 3px solid #333; cursor: pointer; box-shadow: 0 4px 0 #333; text-align: center; }
+        .settings-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #333; }
+        
+        /* CHAT E VIZINHOS */
+        .chat-section { border-top: 3px solid #ddd; margin-top: 15px; padding-top: 10px; display: flex; flex-direction: column; flex: 1; min-height: 180px; }
+        .chat-messages { flex: 1; height: 150px; overflow-y: auto; background: #f8f9fa; border: 2px solid #ccc; border-radius: 8px; padding: 8px; font-size: 13px; margin-bottom: 8px; }
+        .msg-line { margin-bottom: 6px; word-wrap: break-word; }
+        .chat-input-row { display: flex; gap: 5px; height: 45px; }
+        .chat-input-row input { flex: 1; padding: 8px; border: 2px solid #333; border-radius: 8px; font-size: 14px; outline: none; }
+        
+        /* ARTE DE AMBIENTAÇÃO (CSS DRAWING) */
+        .env-item { position: absolute; pointer-events: none; }
+        /* Cozinha */
+        .bg-kitchen { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); }
+        .kitchen-floor { bottom: 0; width: 100%; height: 35%; background: repeating-linear-gradient(45deg, #e0e0e0, #e0e0e0 20px, #ffffff 20px, #ffffff 40px); border-top: 4px solid #333; }
+        .fridge { bottom: 35%; left: 10%; font-size: 80px; }
+        /* Banheiro */
+        .bg-bathroom { background: #e0f7fa; }
+        .bath-floor { bottom: 0; width: 100%; height: 30%; background: #b2ebf2; border-top: 4px solid #0097a7; }
+        .mirror { top: 15%; right: 20%; width: 60px; height: 80px; background: #fff; border: 4px solid #0097a7; border-radius: 30px; box-shadow: inset 5px 5px 0 #e0f7fa; }
+        /* Quarto */
+        .bg-bedroom { background: #2c3e50; transition: background 0.5s; }
+        .bed-floor { bottom: 0; width: 100%; height: 20%; background: #34495e; border-top: 4px solid #1a252f; }
+        .window-night { top: 15%; left: 15%; font-size: 60px; }
+        /* Sala de Jogos */
+        .bg-playroom { background: radial-gradient(circle, #ffeaa7 0%, #fdcb6e 100%); }
+        .rug { bottom: 5%; left: 50%; transform: translateX(-50%); width: 80%; height: 20%; background: #e84393; border-radius: 50%; border: 4px dashed #fff; }
+        .arcade { top: 30%; right: 10%; font-size: 70px; }
+        /* Quintal */
+        .bg-yard { background: linear-gradient(to bottom, #74b9ff 0%, #81ecec 100%); }
+        .yard-grass { bottom: 0; left: 0; width: 100%; height: 30%; background: #55efc4; border-top: 5px solid #00b894; }
+        .sun { top: 10%; right: 15%; font-size: 60px; animation: float 3s ease-in-out infinite alternate; }
+        .house-ext { bottom: 30%; left: -20px; font-size: 100px; }
+
+        @keyframes float { from { transform: translateY(0); } to { transform: translateY(-10px); } }
     </style>
 </head>
 <body>
 
     <div class="game-viewport">
-        <!-- TELA DE LOGIN -->
+        <!-- LOGIN -->
         <div id="auth-screen" class="screen active">
             <div class="auth-box">
-                <h1>Pou Online 🥔</h1>
-                <input type="text" id="pou-nickname-input" placeholder="Apelido do Pou" maxlength="12" value="Jogador">
-                <button id="btn-play-guest" class="pou-btn">JOGAR AGORA</button>
+                <h1 style="font-size:32px; margin-bottom:5px; color:#333;">Pou Online 🥔</h1>
+                <p style="font-weight:bold; color:#555; margin-bottom:15px; font-size:14px;">O Retorno Definitivo</p>
+                <input type="text" id="pou-nickname-input" placeholder="Nome do seu Pou" maxlength="12">
+                <button id="btn-play-guest" class="btn-action" style="width:100%;">ENTRAR NO JOGO</button>
             </div>
         </div>
 
-        <!-- TELA DO JOGO -->
+        <!-- TELA PRINCIPAL DO JOGO -->
         <div id="game-screen" class="screen">
-            <div id="dynamic-wallpaper"></div>
+            <div id="room-bg"></div>
 
             <header id="hud">
                 <div class="stats-grid">
-                    <div class="stat-bar">🍖<div class="progress"><div id="bar-hunger" class="fill"></div></div></div>
-                    <div class="stat-bar">❤️<div class="progress"><div id="bar-health" class="fill"></div></div></div>
+                    <div class="stat-bar">🍖 <div class="progress"><div id="bar-fome" class="fill"></div></div></div>
+                    <div class="stat-bar">❤️ <div class="progress"><div id="bar-saude" class="fill"></div></div></div>
+                    <div class="stat-bar">⚽ <div class="progress"><div id="bar-alegria" class="fill"></div></div></div>
+                    <div class="stat-bar">⚡ <div class="progress"><div id="bar-energia" class="fill"></div></div></div>
+                    <div class="stat-bar" style="grid-column: span 2;">🧼 <div class="progress"><div id="bar-limpeza" class="fill"></div></div></div>
                 </div>
                 <div class="user-info">
-                    <span id="pou-name">Pou</span> <span id="pou-coins">🪙 150</span>
+                    <span id="pou-name" style="font-size:16px;">Pou</span>
+                    <div class="coin-tag" id="pou-coins">🪙 150</div>
                 </div>
+                <button id="btn-settings-toggle">⚙️</button>
             </header>
 
             <main id="room-container">
                 <button id="nav-left" class="nav-btn">◀</button>
-                <div id="room-content">
-                    <div id="scenery-canvas" style="width:100%; height:100%; position:absolute; top:0; left:0; pointer-events:none;"></div>
+                
+                <div id="pou-wrapper">
                     <div id="pou-character">
+                        <div class="dirt-overlay"></div>
                         <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
                         <div class="mouth"></div>
                     </div>
-                    <div id="room-actions">
-                        <button id="action-trigger" class="emoji-box">🍔</button>
-                    </div>
                 </div>
+
                 <button id="nav-right" class="nav-btn">▶</button>
+                <div id="room-actions"></div>
             </main>
 
             <footer id="game-menu">
-                <button id="btn-open-social" class="social-trigger-btn">🌐 ABRIR CHAT E VIZINHOS</button>
+                <button id="btn-open-social" class="btn-action" style="width:95%; background:#9b59b6; box-shadow:0 4px 0 #8e44ad;">🌐 COMUNIDADE & CHAT</button>
             </footer>
+        </div>
+
+        <!-- MODAL DE CONFIGURAÇÕES -->
+        <div id="settings-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" id="close-settings">&times;</span>
+                <h2 style="text-align:center; margin-bottom:20px; color:#333;">Ajustes ⚙️</h2>
+                
+                <!-- O Botão Mágico Anti-Cache -->
+                <button id="btn-refresh" class="settings-btn" style="background:#3498db; color:white;">🔄 Atualizar Jogo (Corrigir Erros)</button>
+                
+                <button id="btn-rename" class="settings-btn" style="background:#f1c40f; color:#333;">📝 Mudar Nome</button>
+                <button id="btn-delete" class="settings-btn" style="background:#e74c3c; color:white; margin-top:20px;">🗑️ Apagar Conta</button>
+            </div>
         </div>
 
         <!-- MODAL SOCIAL -->
         <div id="social-modal" class="modal">
             <div class="modal-content">
                 <span class="close-btn" id="close-social">&times;</span>
-                <h3>Comunidade Pou 🌍</h3>
-                <div id="social-body" class="social-layout"></div>
+                <h3 style="text-align:center; margin-bottom:10px;">Social 🌍</h3>
+                
+                <div id="social-body" style="display:flex; flex-direction:column; gap:8px; max-height:120px; overflow-y:auto;"></div>
+
                 <div class="chat-section">
+                    <p style="font-size:12px; font-weight:bold; margin-bottom:4px;">Chat Global Ao Vivo:</p>
                     <div id="chat-messages" class="chat-messages"></div>
                     <div class="chat-input-row">
-                        <input type="text" id="chat-input-msg" placeholder="Mensagem..." maxlength="50">
-                        <button id="btn-send-chat">Enviar</button>
+                        <input type="text" id="chat-input-msg" placeholder="Mensagem..." maxlength="45">
+                        <button id="btn-send-chat" class="btn-action" style="padding:0 15px;">Enviar</button>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 
+    <!-- SCRIPT PRINCIPAL -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, onSnapshot, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDKtqyAvo8nNebINI6iIbFwyYyXomp-55M",
@@ -127,114 +207,217 @@
             appId: "1:690275116956:web:c26a22dac3c07f56130a59"
         };
 
-        // Força inicialização segura
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let pou = { name: "Pou", hunger: 100, health: 100, coins: 150 };
+        // Status Padrão (Agora com Limpeza)
+        let pou = { name: "Pou", fome: 80, saude: 100, alegria: 80, energia: 100, limpeza: 100, coins: 200, isSleeping: false };
         let userDocRef = null;
-        const rooms = ["kitchen", "bathroom", "playroom", "bedroom", "yard"];
+        let authUser = null;
+
+        const roomsData = [
+            { id: "kitchen", class: "bg-kitchen", elements: `<div class="env-item fridge">🧊</div><div class="env-item kitchen-floor"></div>`,
+              actions: [ { icon: "🍎", act: ()=> modifyStats(15, 5, 0, 0, 0, -5) }, { icon: "🍔", act: ()=> modifyStats(25, -10, 5, 0, 0, -10) }, { icon: "🧃", act: ()=> modifyStats(5, 5, 0, 10, 0, -2) } ] },
+            
+            { id: "bathroom", class: "bg-bathroom", elements: `<div class="env-item mirror"></div><div class="env-item bath-floor"></div>`,
+              actions: [ { icon: "🧼", act: ()=> modifyStats(0, 0, 0, 0, 30, 0) }, { icon: "🚿", act: ()=> modifyStats(0, 0, 5, 10, 100, 0) }, { icon: "💊", act: ()=> modifyStats(0, 50, -5, 0, 0, -15) } ] },
+            
+            { id: "playroom", class: "bg-playroom", elements: `<div class="env-item arcade">🕹️</div><div class="env-item rug"></div>`,
+              actions: [ { icon: "⚽", act: ()=> modifyStats(-5, 0, 20, -15, -10, 5) }, { icon: "🎮", act: ()=> modifyStats(-2, 0, 25, -10, 0, 0) }, { icon: "🧸", act: ()=> modifyStats(0, 0, 15, 5, 0, 0) } ] },
+            
+            { id: "bedroom", class: "bg-bedroom", elements: `<div class="env-item window-night">🌃</div><div class="env-item bed-floor"></div>`,
+              actions: [ { icon: "🛏️", act: ()=> toggleSleep() }, { icon: "📖", act: ()=> modifyStats(0, 0, 10, -5, 0, 0) }, { icon: "🧸", act: ()=> modifyStats(0, 0, 10, 0, 0, 0) } ] },
+            
+            { id: "yard", class: "bg-yard", elements: `<div class="env-item house-ext">🏡</div><div class="env-item sun">☀️</div><div class="env-item yard-grass"></div>`,
+              actions: [ { icon: "🌻", act: ()=> modifyStats(0, 0, 5, -5, -5, 10) }, { icon: "🏃", act: ()=> modifyStats(-10, 5, 20, -20, -20, 5) }, { icon: "🎨", act: ()=> openPaint() } ] }
+        ];
+        
         let roomIdx = 0;
 
-        const roomStyles = {
-            kitchen: { color: "#f39c12", texture: "tex-stripes" },
-            bathroom: { color: "#1abc9c", texture: "tex-stripes" },
-            playroom: { color: "#3498db", texture: "tex-stripes" },
-            bedroom: { color: "#2c3e50", texture: "tex-stripes" },
-            yard: { color: "#74b9ff", texture: "" }
-        };
-
+        // INICIALIZAÇÃO
         document.getElementById('btn-play-guest').addEventListener('click', async () => {
-            const nameField = document.getElementById('pou-nickname-input').value.trim();
-            pou.name = nameField || "Pou Solitário";
-            try {
-                await signInAnonymously(auth);
-            } catch(e) {
-                console.log("Erro login, iniciando modo local forçado");
-                startGameLocal();
-            }
+            const inputName = document.getElementById('pou-nickname-input').value.trim();
+            if(inputName) pou.name = inputName;
+            document.getElementById('btn-play-guest').innerText = "Carregando...";
+            await signInAnonymously(auth);
         });
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                authUser = user;
                 userDocRef = doc(db, "pous", user.uid);
-                try {
-                    const docSnap = await getDoc(userDocRef);
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if(data.pouState) pou = data.pouState;
-                    } else {
-                        await setDoc(userDocRef, { pouState: pou });
-                    }
-                } catch(e) { console.log("Erro Firestore, rodando com dados locais"); }
-                startGameLocal();
+                const docSnap = await getDoc(userDocRef);
+                
+                if (docSnap.exists()) {
+                    pou = { ...pou, ...docSnap.data().pouState }; 
+                    if(pou.limpeza === undefined) pou.limpeza = 100; // Proteção dados antigos
+                } else {
+                    await setDoc(userDocRef, { pouState: pou });
+                }
+
+                document.getElementById('auth-screen').classList.remove('active');
+                document.getElementById('game-screen').classList.add('active');
+                renderRoom();
+                setupChatListener();
+                setInterval(gameTick, 8000); // Decai atributos a cada 8s
             }
         });
 
-        function startGameLocal() {
-            document.getElementById('auth-screen').classList.remove('active');
-            document.getElementById('game-screen').classList.add('active');
-            renderRoom();
-            setupChatListener();
+        // MECÂNICA E LÓGICA DO JOGO
+        function modifyStats(f, s, a, e, l, c) {
+            if (pou.isSleeping && roomIdx === 3) return alert("Acorde o Pou primeiro clicando na Cama 🛏️!");
+            
+            pou.fome = Math.max(0, Math.min(100, pou.fome + f));
+            pou.saude = Math.max(0, Math.min(100, pou.saude + s));
+            pou.alegria = Math.max(0, Math.min(100, pou.alegria + a));
+            pou.energia = Math.max(0, Math.min(100, pou.energia + e));
+            pou.limpeza = Math.max(0, Math.min(100, pou.limpeza + l));
+            
+            if (c < 0 && pou.coins < Math.abs(c)) return alert("Moedas insuficientes!");
+            pou.coins += c;
+
+            // Animação de pulo
+            const char = document.getElementById('pou-character');
+            char.style.transform = 'translateY(-20px)';
+            setTimeout(() => char.style.transform = 'translateY(0)', 150);
+
+            saveAndRender();
+        }
+
+        function toggleSleep() {
+            pou.isSleeping = !pou.isSleeping;
+            saveAndRender();
+        }
+
+        function gameTick() {
+            if (!userDocRef) return;
+            if (pou.isSleeping) {
+                pou.energia = Math.min(100, pou.energia + 10);
+                if(pou.energia === 100) pou.isSleeping = false;
+            } else {
+                pou.fome = Math.max(0, pou.fome - 1);
+                pou.energia = Math.max(0, pou.energia - 1);
+                pou.alegria = Math.max(0, pou.alegria - 1);
+                pou.limpeza = Math.max(0, pou.limpeza - 0.5);
+                
+                // Se algum estiver zero, perde saúde
+                if (pou.fome === 0 || pou.energia === 0 || pou.limpeza < 20) {
+                    pou.saude = Math.max(0, pou.saude - 2);
+                }
+            }
+            saveAndRender();
+        }
+
+        // ATUALIZAÇÃO VISUAL
+        function getColor(val) { return val > 50 ? '#2ecc71' : (val > 20 ? '#f1c40f' : '#e74c3c'); }
+
+        function saveAndRender() {
+            // Salva no banco
+            if(userDocRef) updateDoc(userDocRef, { pouState: pou }).catch(()=>{});
+
+            // Atualiza HUD
+            document.getElementById('bar-fome').style.width = `${pou.fome}%`;
+            document.getElementById('bar-fome').style.background = getColor(pou.fome);
+            document.getElementById('bar-saude').style.width = `${pou.saude}%`;
+            document.getElementById('bar-saude').style.background = getColor(pou.saude);
+            document.getElementById('bar-alegria').style.width = `${pou.alegria}%`;
+            document.getElementById('bar-alegria').style.background = getColor(pou.alegria);
+            document.getElementById('bar-energia').style.width = `${pou.energia}%`;
+            document.getElementById('bar-energia').style.background = getColor(pou.energia);
+            document.getElementById('bar-limpeza').style.width = `${pou.limpeza}%`;
+            document.getElementById('bar-limpeza').style.background = getColor(pou.limpeza);
+            
+            document.getElementById('pou-name').innerText = pou.name;
+            document.getElementById('pou-coins').innerText = `🪙 ${pou.coins}`;
+
+            // Atualiza Aparência do Pou
+            const pWrapper = document.getElementById('pou-wrapper');
+            pWrapper.className = "";
+            if (pou.isSleeping && roomIdx === 3) pWrapper.classList.add('sleeping');
+            if (pou.saude < 30) pWrapper.classList.add('sick');
+            if (pou.limpeza < 40) pWrapper.classList.add('dirty');
         }
 
         function renderRoom() {
-            const currentRoom = rooms[roomIdx];
-            const wallpaper = document.getElementById('dynamic-wallpaper');
-            const canvas = document.getElementById('scenery-canvas');
-            const actionBtn = document.getElementById('action-trigger');
+            const r = roomsData[roomIdx];
+            const bg = document.getElementById('room-bg');
+            const acts = document.getElementById('room-actions');
+            
+            bg.className = r.class;
+            bg.innerHTML = r.elements;
+            if(r.id === "bedroom" && pou.isSleeping) bg.style.background = "#111";
 
-            // SISTEMA ANTI-TELA BRANCA: Força cores de fallback caso falte algo
-            const style = roomStyles[currentRoom] || { color: "#f39c12", texture: "" };
-            wallpaper.style.backgroundColor = style.color;
-            wallpaper.className = style.texture;
+            acts.innerHTML = "";
+            r.actions.forEach((btn, i) => {
+                const el = document.createElement('button');
+                el.className = 'action-btn';
+                el.innerText = btn.icon;
+                el.onclick = btn.act;
+                acts.appendChild(el);
+            });
+            saveAndRender();
+        }
 
-            canvas.innerHTML = "";
-            actionBtn.style.display = "flex";
+        document.getElementById('nav-right').addEventListener('click', () => { roomIdx = (roomIdx + 1) % roomsData.length; renderRoom(); });
+        document.getElementById('nav-left').addEventListener('click', () => { roomIdx = (roomIdx - 1 + roomsData.length) % roomsData.length; renderRoom(); });
 
-            if (currentRoom === "kitchen") { actionBtn.innerText = "🍔"; } 
-            else if (currentRoom === "bathroom") { actionBtn.innerText = "🧼"; } 
-            else if (currentRoom === "playroom") { actionBtn.innerText = "⚽"; } 
-            else if (currentRoom === "bedroom") { actionBtn.innerText = "🌙"; } 
-            else if (currentRoom === "yard") { 
-                actionBtn.style.display = "none"; 
-                canvas.innerHTML = `<div class="yard-grass"></div><div style="position:absolute; top:20%; left:20px; font-size:40px;">☀️</div>`; 
+        // CONFIGURAÇÕES (BOTÃO ATUALIZAR, NOME, DELETAR)
+        const setModal = document.getElementById('settings-modal');
+        document.getElementById('btn-settings-toggle').addEventListener('click', () => setModal.style.display = 'block');
+        document.getElementById('close-settings').addEventListener('click', () => setModal.style.display = 'none');
+
+        // 1. Atualizar com Cache Busting
+        document.getElementById('btn-refresh').addEventListener('click', () => {
+            window.location.href = window.location.href.split('?')[0] + '?v=' + new Date().getTime();
+        });
+
+        // 2. Mudar Nome
+        document.getElementById('btn-rename').addEventListener('click', async () => {
+            const novoNome = prompt("Qual o novo nome do seu Pou?", pou.name);
+            if(novoNome && novoNome.trim() !== "") {
+                pou.name = novoNome.trim().substring(0,12);
+                saveAndRender();
+                setModal.style.display = 'none';
             }
+        });
 
-            document.getElementById('bar-hunger').style.width = `${pou.hunger}%`;
-            document.getElementById('bar-health').style.width = `${pou.health}%`;
-            document.getElementById('pou-name').innerText = pou.name;
-            document.getElementById('pou-coins').innerText = `🪙 ${pou.coins}`;
-        }
+        // 3. Deletar Conta
+        document.getElementById('btn-delete').addEventListener('click', async () => {
+            const certeza = confirm("Tem certeza absoluta? O seu Pou e tudo que você conseguiu será apagado PARA SEMPRE!");
+            if(certeza && authUser) {
+                try {
+                    await deleteDoc(userDocRef); // Apaga do Banco
+                    await deleteUser(authUser); // Apaga Autenticação
+                    alert("Conta apagada com sucesso. Adeus, Pou! 🪦");
+                    window.location.href = window.location.href.split('?')[0] + '?v=' + new Date().getTime();
+                } catch(e) {
+                    alert("Erro ao apagar. Tente atualizar a página e tentar de novo.");
+                }
+            }
+        });
 
-        // Cliques de Navegação diretos e sem validações complexas que travam
-        document.getElementById('nav-right').addEventListener('click', () => { roomIdx = (roomIdx + 1) % rooms.length; renderRoom(); });
-        document.getElementById('nav-left').addEventListener('click', () => { roomIdx = (roomIdx - 1 + rooms.length) % rooms.length; renderRoom(); });
-
-        // Modais básicos
+        // SISTEMA SOCIAL (VIZINHOS E CHAT)
         const socModal = document.getElementById('social-modal');
-        document.getElementById('btn-open-social').addEventListener('click', () => { socModal.style.display = 'block'; loadNeighbors(); });
-        document.getElementById('close-social').addEventListener('click', () => socModal.style.display = 'none');
-
-        function loadNeighbors() {
-            try {
-                onSnapshot(collection(db, "pous"), (snap) => {
-                    const body = document.getElementById('social-body'); body.innerHTML = "";
-                    snap.forEach(docSnap => {
-                        const data = docSnap.data().pouState;
-                        if(!data || docSnap.id === auth.currentUser?.uid) return;
-                        const row = document.createElement('div'); row.className = 'player-row';
-                        row.innerHTML = `<div><strong>${data.name}</strong></div><span style="font-size:12px;color:#2ecc71;">● Online</span>`;
-                        body.appendChild(row);
-                    });
+        document.getElementById('btn-open-social').addEventListener('click', () => {
+            socModal.style.display = 'block';
+            onSnapshot(collection(db, "pous"), (snap) => {
+                const body = document.getElementById('social-body'); body.innerHTML = "";
+                snap.forEach(docSnap => {
+                    const data = docSnap.data().pouState;
+                    if(!data || docSnap.id === authUser?.uid) return;
+                    const row = document.createElement('div');
+                    row.style.cssText = "display:flex; justify-content:space-between; padding:8px; background:#f1f2f6; border:2px solid #333; border-radius:10px;";
+                    row.innerHTML = `<strong>${data.name}</strong> <span style="color:#2ecc71; font-size:12px;">❤️ Online</span>`;
+                    body.appendChild(row);
                 });
-            } catch(e){}
-        }
+            });
+        });
+        document.getElementById('close-social').addEventListener('click', () => socModal.style.display = 'none');
 
         function setupChatListener() {
             try {
-                const q = query(collection(db, "global_chat"), orderBy("timestamp", "asc"), limit(25));
+                const q = query(collection(db, "global_chat"), orderBy("timestamp", "asc"), limit(30));
                 onSnapshot(q, (snapshot) => {
                     const container = document.getElementById('chat-messages');
                     container.innerHTML = "";
@@ -242,24 +425,25 @@
                         const msg = doc.data();
                         const line = document.createElement('div');
                         line.className = "msg-line";
-                        line.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text}`;
+                        line.innerHTML = `<strong style="color:#2980b9;">${msg.sender}:</strong> ${msg.text}`;
                         container.appendChild(line);
                     });
                     container.scrollTop = container.scrollHeight;
-                }, (err) => {
-                    document.getElementById('chat-messages').innerHTML = `<p style="color:red;font-size:11px;text-align:center;">Erro nas Regras do Firebase. Ative o modo público no console.</p>`;
                 });
             } catch(e){}
         }
 
         document.getElementById('btn-send-chat').addEventListener('click', async () => {
             const input = document.getElementById('chat-input-msg');
-            if(!input.value.trim()) return;
+            const txt = input.value.trim();
+            if(!txt) return;
             try {
-                await addDoc(collection(db, "global_chat"), { sender: pou.name, text: input.value.trim(), timestamp: Date.now() });
+                await addDoc(collection(db, "global_chat"), { sender: pou.name, text: txt, timestamp: Date.now() });
                 input.value = "";
-            } catch(e) { alert("Envio bloqueado pelo Firebase."); }
+            } catch(e) {}
         });
+
+        function openPaint() { alert("Você descobriu o botão de tintas futuro! 🎨 (Em breve)"); }
     </script>
 </body>
 </html>
