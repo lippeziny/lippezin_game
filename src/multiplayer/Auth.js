@@ -2,7 +2,7 @@ import { auth } from '../config/firebase.js';
 import { signInAnonymously, GoogleAuthProvider, linkWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { pouStateInstance } from '../core/PouState.js';
 import { gameLoopInstance } from '../core/GameLoop.js';
-import './Social.js'; 
+import '/Social.js'; 
 
 const playButton = document.getElementById('btn-play-guest');
 const nicknameInput = document.getElementById('pou-nickname-input');
