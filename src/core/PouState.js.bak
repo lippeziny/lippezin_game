@@ -7,7 +7,7 @@ export class PouState {
         this.docRef = null;
     }
 
-    async loadOrCreatePou(userId, chosenName) {
+    async loadOrCreatePou(userId, email) {
         this.docRef = doc(db, "pous", userId);
         const docSnap = await getDoc(this.docRef);
 
@@ -15,8 +15,9 @@ export class PouState {
             this.currentPou = docSnap.data();
             this.applyOfflineDecay();
         } else {
+            // Inicialização padrão do Pou
             this.currentPou = {
-                name: chosenName,
+                name: email.split('@')[0],
                 level: 1,
                 xp: 0,
                 coins: 150,
@@ -39,11 +40,15 @@ export class PouState {
         const now = Date.now();
         const elapsedHours = (now - this.currentPou.lastUpdate) / (1000 * 60 * 60);
 
+        // Algoritmo determinístico de decaimento offline
         this.currentPou.hunger = Math.max(0, this.currentPou.hunger - (5 * elapsedHours));
         this.currentPou.fun = Math.max(0, this.currentPou.fun - (8 * elapsedHours));
-        this.currentPou.energy = this.currentPou.isSleeping 
-            ? Math.min(100, this.currentPou.energy + (15 * elapsedHours))
-            : Math.max(0, this.currentPou.energy - (4 * elapsedHours));
+        
+        if (this.currentPou.isSleeping) {
+            this.currentPou.energy = Math.min(100, this.currentPou.energy + (15 * elapsedHours));
+        } else {
+            this.currentPou.energy = Math.max(0, this.currentPou.energy - (4 * elapsedHours));
+        }
 
         if (this.currentPou.hunger === 0) {
             this.currentPou.health = Math.max(10, this.currentPou.health - (10 * elapsedHours));
@@ -59,6 +64,18 @@ export class PouState {
         await updateDoc(this.docRef, this.currentPou);
     }
 
+    addXp(amount) {
+        this.currentPou.xp += amount;
+        const nextLevelXp = this.currentPou.level * 100;
+        if (this.currentPou.xp >= nextLevelXp) {
+            this.currentPou.xp -= nextLevelXp;
+            this.currentPou.level++;
+            this.currentPou.coins += 50; // Bônus de nível
+            alert(`Parabéns! Seu Pou subiu para o Nível ${this.currentPou.level}!`);
+        }
+        this.updateHUD();
+    }
+
     updateHUD() {
         document.getElementById('bar-hunger').style.width = `${this.currentPou.hunger}%`;
         document.getElementById('bar-health').style.width = `${this.currentPou.health}%`;
@@ -68,8 +85,14 @@ export class PouState {
         document.getElementById('pou-level').innerText = `Nível: ${this.currentPou.level}`;
         document.getElementById('pou-coins').innerText = `🪙 ${Math.floor(this.currentPou.coins)}`;
 
+        // Renderização de expressões baseadas em estados críticas
         const pouEl = document.getElementById('pou-character');
-        pouEl.className = (this.currentPou.hunger < 30 || this.currentPou.health < 40) ? 'sad' : 'happy';
+        pouEl.className = ""; 
+        if (this.currentPou.hunger < 30 || this.currentPou.health < 40) {
+            pouEl.classList.add('sad');
+        } else {
+            pouEl.classList.add('happy');
+        }
     }
 }
 export const pouStateInstance = new PouState();

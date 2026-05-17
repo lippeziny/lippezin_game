@@ -15,7 +15,21 @@ class RoomManager {
         if (this.currentIndex < 0) this.currentIndex = this.rooms.length - 1;
         if (this.currentIndex >= this.rooms.length) this.currentIndex = 0;
 
-        this.roomContent.className = this.rooms[this.currentIndex];
+        const currentRoom = this.rooms[this.currentIndex];
+        this.roomContent.className = currentRoom;
+        
+        this.triggerRoomBehavior(currentRoom);
+    }
+
+    triggerRoomBehavior(room) {
+        // Remove elementos flutuantes do cômodo anterior
+        const items = document.querySelectorAll('.room-item');
+        items.forEach(item => item.remove());
+
+        if (room === 'kitchen') {
+            // Exemplo: injetar comida arrastável
+            console.log("Entrou na Cozinha: Geladeira pronta.");
+        }
     }
 }
 const roomManager = new RoomManager();
